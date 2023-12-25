@@ -1,10 +1,59 @@
 <template>
   <div>
-    <SearchReturn />
-    <div class="flex space-x-8 py-8">
-      <ReturnInformation />
+    <div class="flex space-x-8 p-8">
+      <div class="relative w-1/2">
+        <div class="bg-[#DDDDDD] text-black font-bold py-2 px-4 mb-4">
+          <span class="mr-2">CUSTOMER ADDRESS</span>
+          <span class="text-2xl float-right">+</span>
+        </div>
+        <table
+          class="w-full table-auto border border-gray-300 border-separate border-slate-400"
+        >
+          <tbody>
+            <tr class="bg-gray-200 text-black mb-2">
+              <td class="p-2 font-bold">Name</td>
+              <td class="p-2">Wqahaj baba</td>
+            </tr>
+            <tr class="bg-gray-100 text-black mb-2">
+              <td class="p-2 font-bold">Street</td>
+              <td class="p-2">near airptor road</td>
+            </tr>
+            <tr class="bg-gray-200 text-black mb-2">
+              <td class="p-2 font-bold">Postal Code</td>
+              <td class="p-2">1000177454</td>
+            </tr>
+            <tr class="bg-gray-100 text-black mb-2">
+              <td class="p-2 font-bold">City</td>
+              <td class="p-2">Ned</td>
+            </tr>
+            <tr class="bg-gray-200 text-black mb-2">
+              <td class="p-2 font-bold">Country</td>
+              <td class="p-2">Ind</td>
+            </tr>
+            <tr class="bg-gray-100 text-black mb-2">
+              <td class="p-2 font-bold">Addition Info.</td>
+              <td class="p-2">-</td>
+            </tr>
+            <tr class="bg-gray-200 text-black mb-2">
+              <td class="p-2 font-bold">Article No.</td>
+              <td><button>Add new Address</button></td>
+            </tr>
 
-      <!-- Second table -->
+            <!-- Add more rows for other fields as needed -->
+          </tbody>
+        </table>
+        <div class="flex space-x-4 mt-4">
+          <button
+            class="py-2 px-4 bg-yellow-500 border border-gray-300 rounded"
+          >
+            Save
+          </button>
+          <button class="py-2 px-4 bg-white border border-gray-300 rounded">
+            Cancel
+          </button>
+        </div>
+      </div>
+
       <div class="relative w-1/2">
         <div class="bg-[#DDDDDD] text-black font-bold py-2 px-4 mb-4">
           <span class="mr-2">CREATE TECHNICAL CHECK</span>
@@ -60,13 +109,7 @@
 </template>
 
 <script>
-import SearchReturn from "../common/SearchReturn.vue";
-import ReturnInformation from "../common/ReturnInformation.vue";
 export default {
-  name: "ReturnInspectionDetails",
-  components: {
-    SearchReturn,
-    ReturnInformation,
-  },
+  name: "CustomerAddress",
 };
 </script>

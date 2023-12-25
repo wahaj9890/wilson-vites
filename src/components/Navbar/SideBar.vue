@@ -2,7 +2,7 @@
   <div>
     <div
       v-if="isOpen"
-      class="fixed top-0 z-10 left-0 h-full sideBarBg text-white p-4"
+      class="fixed top-0 z-10 left-0 h-full bg-[#66CEE8] text-white p-4"
       :class="{
         'w-48 transition-all duration-1000 ease-in-out ': isOpen,
         'w-0': !isOpen,

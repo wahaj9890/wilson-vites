@@ -9,6 +9,11 @@ export default [
         // }
     },
     {
+        path:"/returns/create-return",
+        name:"create-return",
+        component:()=>import ("../../views/CreateReturn.vue")
+    },
+    {
         path: "/technical-check",
         name: "technical-check",
         component: () => import("../../views/SideBar/TechnicalCheck.vue"),

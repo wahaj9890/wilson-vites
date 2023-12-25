@@ -14,7 +14,16 @@ export const sidemenu = {
             class: [""]
         },
         children: [
-
+            {
+                name: "create-return",
+                module: "CreateReturn",
+                icon: [],
+                routerLink: {
+                    name: "CreateReturn",
+                    tooltip: "Create Return",
+                    class: [""],
+                }
+            }
         ]
     },
     technicalCheck: {

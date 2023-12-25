@@ -6,7 +6,7 @@
 
       <!-- Second Table -->
       <div class="relative w-1/2">
-        <div class="bg-gray-200 text-black font-bold py-2 px-4 mb-4">
+        <div class="bg-[#DDDDDD] text-black font-bold py-2 px-4 mb-4">
           <span class="mr-2">CREATE TECHNICAL CHECK</span>
           <span class="text-2xl float-right">+</span>
         </div>
@@ -14,7 +14,7 @@
           class="w-full table-auto border border-gray-300 border-separate border-slate-400"
         >
           <tbody>
-            <tr class="bg-gray-200 text-black mb-2">
+            <tr class="bg-[#F0F0F0] text-black mb-2">
               <td class="p-2 font-bold">Technical Check Result:</td>
               <td class="p-2 font-bold">
                 <!-- Dropdown here (replace this with your Vue.js dropdown component) -->
@@ -25,7 +25,7 @@
                 </select>
               </td>
             </tr>
-            <tr class="bg-gray-100 text-black mb-2">
+            <tr class="bg-[#F7F7F7] text-black mb-2">
               <td class="p-2 font-bold">Technician Comments:</td>
               <td class="p-2 font-bold">
                 <!-- Input box here (replace this with your Vue.js input component) -->
@@ -35,7 +35,7 @@
                 />
               </td>
             </tr>
-            <tr class="bg-gray-200 text-black mb-2">
+            <tr class="bg-[#F0F0F0] text-black mb-2">
               <td class="p-2 font-bold">Estimation Condition:</td>
               <td class="p-2 font-bold">
                 <!-- Dropdown here (replace this with your Vue.js dropdown component) -->

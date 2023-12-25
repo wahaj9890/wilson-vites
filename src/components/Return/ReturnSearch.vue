@@ -124,19 +124,40 @@
   </div>
 </template> -->
 <template>
+  <pre>{{ searchOrders }}</pre>
+
   <div>
     <p class="font-bold underline md:hidden">Welcome in Wilson</p>
-    <div class="md:flex items-center space-x-4">
+    <p class="font-bold mt-4 text-2xl">Search for</p>
+    <div class="md:flex items-center space-x-4 pt-2">
       <!-- Input Box 1 -->
       <div class="mb-4 md:w-1/4">
-        <label for="input1" class="text-sm text-gray-600 mb-1"
-          >ORDER NUMBER</label
+        <label for="orderNumber" class="uppercase text-sm text-gray-600 mb-1"
+          >order number</label
         >
         <div class="relative">
           <input
-            id="input1"
+            id="orderNumber"
             type="text"
-            placeholder="Enter text"
+            v-model="orderNumber"
+            placeholder="Order number"
+            class="w-full px-3 py-2 border border-gray-300"
+          />
+          <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
+            <i class="fas fa-search text-gray-500"></i>
+          </div>
+        </div>
+      </div>
+      <div class="mb-4 md:w-1/4">
+        <label for="customerNumber" class="uppercase text-sm text-gray-600 mb-1"
+          >customer number</label
+        >
+        <div class="relative">
+          <input
+            id="customerNumber"
+            type="text"
+            v-model="customerNumber"
+            placeholder="Customer number"
             class="w-full px-3 py-2 border border-gray-300"
           />
           <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
@@ -146,14 +167,15 @@
         </div>
       </div>
       <div class="mb-4 md:w-1/4">
-        <label for="input1" class="text-sm text-gray-600 mb-1"
-          >ORDER NUMBER</label
+        <label for="invoiceNumber" class="uppercase text-sm text-gray-600 mb-1"
+          >invoice number</label
         >
         <div class="relative">
           <input
-            id="input1"
+            id="invoiceNumber"
             type="text"
-            placeholder="Enter text"
+            v-model="invoiceNumber"
+            placeholder="Invoice number"
             class="w-full px-3 py-2 border border-gray-300"
           />
           <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
@@ -163,31 +185,17 @@
         </div>
       </div>
       <div class="mb-4 md:w-1/4">
-        <label for="input1" class="text-sm text-gray-600 mb-1"
-          >ORDER NUMBER</label
+        <label
+          for="customerReferenceNumber"
+          class="uppercase text-sm text-gray-600 mb-1"
+          >customer reference number</label
         >
         <div class="relative">
           <input
-            id="input1"
+            id="customerReferenceNumber"
             type="text"
-            placeholder="Enter text"
-            class="w-full px-3 py-2 border border-gray-300"
-          />
-          <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
-            <!-- Search Icon for Input 1 -->
-            <i class="fas fa-search text-gray-500"></i>
-          </div>
-        </div>
-      </div>
-      <div class="mb-4 md:w-1/4">
-        <label for="input1" class="text-sm text-gray-600 mb-1"
-          >ORDER NUMBER</label
-        >
-        <div class="relative">
-          <input
-            id="input1"
-            type="text"
-            placeholder="Enter text"
+            v-model="customerReferenceNumber"
+            placeholder="Customer reference ..."
             class="w-full px-3 py-2 border border-gray-300"
           />
           <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
@@ -197,18 +205,16 @@
         </div>
       </div>
 
-      <!-- Repeat similar structure for Input Boxes 2 to 4 -->
-
-      <!-- Input Box 5 -->
       <div class="mb-4 md:w-1/4">
-        <label for="input5" class="text-sm text-gray-600 mb-1"
-          >TRACKING NUMBER</label
+        <label for="trackingNumber" class="uppercase text-sm text-gray-600 mb-1"
+          >tracking number</label
         >
         <div class="relative">
           <input
-            id="input5"
+            id="trackingNumber"
             type="text"
-            placeholder="Enter text"
+            v-model="trackingNumber"
+            placeholder="Tracking number"
             class="w-full px-3 py-2 border border-gray-300"
           />
           <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
@@ -218,36 +224,77 @@
         </div>
       </div>
 
-      <!-- Search Button -->
-      <button class="bg-yellow-500 w-full md:w-auto px-4 py-2 text-white">
+      <button
+        class="bg-[#F3E43E] w-full md:w-auto px-12 py-2 text-black font-semibold"
+        @click="searchOrder"
+      >
         Search
       </button>
     </div>
-
     <!-- Dropdown Label and Dropdown -->
-    <div class="mb-4 md:flex items-center space-x-4">
-      <label for="orderBy" class="text-sm text-gray-600 mb-1">Order By</label>
+    <div class="mb-4 md:flex items-center justify-end space-x-4">
+      <label for="orderBy" class="text-sm text-black font-bold mb-1"
+        >Order By:</label
+      >
       <div class="relative">
         <select
           id="orderBy"
-          class="w-full md:w-1/4 px-3 py-2 border border-gray-300"
+          class="w-full md:w-auto pl-7 pr-2 py-2 border border-gray-300"
         >
           <!-- Add options for the dropdown as needed -->
-          <option value="option1">Option 1</option>
+          <option value="option1">Latest date</option>
           <option value="option2">Option 2</option>
           <option value="option3">Option 3</option>
         </select>
-        <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
-          <!-- Dropdown Icon -->
+        <!-- <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
           <i class="fas fa-chevron-down text-gray-500"></i>
-        </div>
+        </div> -->
       </div>
+      <pre>{{ searchOrders }}</pre>
     </div>
   </div>
 </template>
 
 <script>
+// import { httpGet, httpPost } from "../../utils/request";
+import axios from "axios";
+import { ref, computed, onMounted } from "vue";
+import { useStore } from "vuex";
 export default {
   name: "ReturnSearch",
+  setup() {
+    const store = useStore();
+    const orderNumber = ref("");
+    const invoiceNumber = ref("");
+    const customerNumber = ref("");
+    const customerReferenceNumber = ref("");
+    const trackingNumber = ref("");
+    function searchOrder() {
+      const payload = {
+        orderId: orderNumber.value,
+        customerNumber: customerNumber.value,
+        invoiceNumber: invoiceNumber.value,
+        customerReferenceNumber: customerReferenceNumber.value,
+        orderTrackingNumber: trackingNumber.value,
+      };
+      store.dispatch("searchReturnAction", payload);
+    }
+    const searchOrders = computed(() => store.state.searchOrders);
+    const logSearchOrders = () => {
+      console.log(searchOrders.value);
+    };
+    onMounted(() => {
+      logSearchOrders();
+    });
+    return {
+      searchOrder,
+      searchOrders,
+      orderNumber,
+      customerNumber,
+      customerReferenceNumber,
+      invoiceNumber,
+      trackingNumber,
+    };
+  },
 };
 </script>
