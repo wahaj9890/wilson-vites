@@ -1,64 +1,38 @@
 <template>
   <div class="relative w-1/2">
-    <div class="bg-[#DDDDDD] text-black font-bold py-2 px-4 mb-4">
-      <span class="mr-2">RETURN INFORMATION</span>
-      <span class="text-2xl float-right">+</span>
-    </div>
-    <table
-      class="w-full table-auto border border-gray-300 border-separate border-slate-400"
+    <div
+      @click="toggleReturnInformation"
+      class="bg-[#DDDDDD] cursor-pointer text-black font-bold py-2 px-4 mb-4"
     >
-      <!-- <tbody>
-        <tr class="bg-gray-200 text-black mb-2">
-          <td class="p-2 font-bold">Customer No.</td>
-          <td class="p-2">1177454</td>
-        </tr>
-        <tr class="bg-gray-100 text-black mb-2">
-          <td class="p-2 font-bold">Order No.</td>
-          <td class="p-2">12103213</td>
-        </tr>
-        <tr class="bg-gray-200 text-black mb-2">
-          <td class="p-2 font-bold">Article No.</td>
-          <td class="p-2">1000177454</td>
-        </tr>
-        <tr class="bg-gray-100 text-black mb-2">
-          <td class="p-2 font-bold">Customer No.</td>
-          <td class="p-2">1177454</td>
-        </tr>
-        <tr class="bg-gray-200 text-black mb-2">
-          <td class="p-2 font-bold">Order No.</td>
-          <td class="p-2">12103213</td>
-        </tr>
-        <tr class="bg-gray-100 text-black mb-2">
-          <td class="p-2 font-bold">Article No.</td>
-          <td class="p-2">1000177454</td>
-        </tr>
-        <tr class="bg-gray-200 text-black mb-2">
-          <td class="p-2 font-bold">Article No.</td>
-          <td class="p-2">1000177454</td>
-        </tr>
-        <tr class="bg-gray-100 text-black mb-2">
-          <td class="p-2 font-bold">Article No.</td>
-          <td class="p-2">1000177454</td>
-        </tr>
-      </tbody> -->
-      <tbody>
-        <tr
-          v-for="(item, index) in informationDetails"
-          :key="index"
-          :class="[
-            ' text-black mb-2',
-            index % 2 === 0 ? 'bg-[#F0F0F0]' : 'bg-[#F7F7F7]',
-          ]"
-        >
-          <td class="p-2 font-bold w-1/4">{{ item.label }}</td>
-          <td class="p-2">{{ item.value }}</td>
-        </tr>
-      </tbody>
-    </table>
+      <span class="mr-2">RETURN INFORMATION</span>
+      <i
+        :class="['float-right fas', showReturnInfo ? 'fa-minus' : 'fa-plus']"
+      ></i>
+
+      <!-- <span class="text-2xl float-right">+</span> -->
+    </div>
+    <transition name="fade">
+      <table
+        v-if="showReturnInfo"
+        class="w-full table-auto border border-gray-300 border-separate border-slate-400"
+      >
+        <tbody>
+          <tr
+            v-for="(item, index) in informationDetails"
+            :key="index"
+            :class="[
+              ' text-black mb-2',
+              index % 2 === 0 ? 'bg-[#F0F0F0]' : 'bg-[#F7F7F7]',
+            ]"
+          >
+            <td class="p-2 font-bold w-1/4">{{ item.label }}</td>
+            <td class="p-2">{{ item.value }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </transition>
     <div class="flex space-x-4 mt-4">
-      <button class="py-2 px-8 bg-[#F3E43E]">
-        Save
-      </button>
+      <button class="py-2 px-8 bg-[#F3E43E]">Save</button>
       <button class="py-2 px-8 bg-white text-black border border-black">
         Cancel
       </button>
@@ -70,6 +44,7 @@ import { onMounted, ref, computed } from "vue";
 export default {
   name: "ReturnInformation",
   setup() {
+    const showReturnInfo = ref(true);
     const informationDetails = ref([
       {
         label: "Customer No.",
@@ -125,7 +100,10 @@ export default {
       },
     ]);
 
-    return { informationDetails };
+    const toggleReturnInformation = () => {
+      showReturnInfo.value = !showReturnInfo.value;
+    };
+    return { showReturnInfo, informationDetails, toggleReturnInformation };
   },
 };
 </script>

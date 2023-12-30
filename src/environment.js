@@ -4,8 +4,8 @@
 
 export const environment = {
     production: false,
-    apiUrl: "https://localhost:44326",
-    // apiUrl: "https://wilson-api-dev01d-featuretest2.azurewebsites.net",
+    // apiUrl: "https://localhost:44326",
+    apiUrl: "https://wilson-api-dev01d-featuretest2.azurewebsites.net",
     zplCode:
         "^XA ^BY2,0,200^FO40,40^BC,,N^FD@DeliveryID@^FS^CFA,40^FO85,260^FD@DeliveryID@^FS^XZ",
     clientId: "dd6246b2-6e41-4c18-8ea9-24f338c6b46c",

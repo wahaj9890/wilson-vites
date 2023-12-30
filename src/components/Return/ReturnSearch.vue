@@ -124,8 +124,6 @@
   </div>
 </template> -->
 <template>
-  <pre>{{ searchOrders }}</pre>
-
   <div>
     <p class="font-bold underline md:hidden">Welcome in Wilson</p>
     <p class="font-bold mt-4 text-2xl">Search for</p>
@@ -250,25 +248,31 @@
           <i class="fas fa-chevron-down text-gray-500"></i>
         </div> -->
       </div>
-      <pre>{{ searchOrders }}</pre>
     </div>
+    <ReturnDetails  />
   </div>
 </template>
 
 <script>
 // import { httpGet, httpPost } from "../../utils/request";
-import axios from "axios";
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
+import ReturnDetails from "../Return/ReturnDetails.vue";
 export default {
   name: "ReturnSearch",
+  components: {
+    ReturnDetails,
+  },
   setup() {
     const store = useStore();
+
     const orderNumber = ref("");
     const invoiceNumber = ref("");
     const customerNumber = ref("");
     const customerReferenceNumber = ref("");
     const trackingNumber = ref("");
+    const orderDetailsParams = ref({});
+
     function searchOrder() {
       const payload = {
         orderId: orderNumber.value,
@@ -277,18 +281,11 @@ export default {
         customerReferenceNumber: customerReferenceNumber.value,
         orderTrackingNumber: trackingNumber.value,
       };
-      store.dispatch("searchReturnAction", payload);
+      store.dispatch("searchReturnAction",  payload );
+      store.dispatch("storeData", payload);
     }
-    const searchOrders = computed(() => store.state.searchOrders);
-    const logSearchOrders = () => {
-      console.log(searchOrders.value);
-    };
-    onMounted(() => {
-      logSearchOrders();
-    });
     return {
       searchOrder,
-      searchOrders,
       orderNumber,
       customerNumber,
       customerReferenceNumber,

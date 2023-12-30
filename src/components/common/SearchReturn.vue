@@ -11,6 +11,7 @@
       <div class="relative flex-grow">
         <input
           type="text"
+          v-model="deliveryNumber"
           placeholder="Search..."
           class="w-full py-2 px-4 border border-gray-300 rounded-md outline-none focus:border-blue-500 focus:ring focus:ring-blue-200"
         />
@@ -35,13 +36,31 @@
       </div>
 
       <!-- Search Button -->
-      <button class="bg-[#F3E43E] py-2 px-12 text-black">Search</button>
+      <button
+        class="bg-[#F3E43E] py-2 px-12 text-black"
+        @click="searchByDeliveryNumber"
+      >
+        Search
+      </button>
     </div>
   </div>
 </template>
 
 <script>
+import { ref, computed, onMounted } from "vue";
+import { useStore } from "vuex";
+
 export default {
   name: "SearchReturn",
+  setup() {
+    const store = useStore();
+    const deliveryNumber = ref("");
+
+    const searchByDeliveryNumber = () => {};
+    return {
+      deliveryNumber,
+      searchByDeliveryNumber,
+    };
+  },
 };
 </script>

@@ -2,122 +2,260 @@
   <div
     class="flex flex-col items-center justify-center min-h-screen overflow-hidden grayFair"
   >
-    <p class="font-bold underline md:hidden">Welcome in Wilson</p>
+    <p class="font-bold underline md:hidden">
+      {{ $t("login.wilson.welcome") }}
+    </p>
     <form class="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-      <!-- Title "Login" -->
-      <h2 class="text-2xl font-bold mb-6">Login</h2>
+      <h2 class="text-2xl font-bold mb-6">{{ $t("loginBtn") }}</h2>
 
-      <!-- Email field -->
       <div class="mb-4">
-        <label for="email" class="block text-gray-700 text-sm font-bold mb-2"
-          >Email</label
+        <label
+          for="language"
+          class="block text-gray-700 text-sm font-bold mb-2"
+          >{{ $t("login.language") }}</label
         >
-        <input
-          type="email"
-          id="email"
-          v-model="email"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
-          placeholder="Enter your email"
-        />
+        <select
+          v-model="selectedLanguage"
+          id="language"
+          @change="updateLanguage"
+          class="w-full cursor-pointer px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
+        >
+          <option
+            v-for="lang in languages"
+            :key="lang.value"
+            :value="lang.value"
+          >
+            {{ lang.language }}
+          </option>
+        </select>
       </div>
 
-      <!-- Password field with eye icon -->
       <div class="mb-4 relative">
-        <label for="password" class="block text-gray-700 text-sm font-bold mb-2"
-          >Password</label
+        <label
+          for="password"
+          class="block text-gray-700 text-sm font-bold mb-2"
+          >{{ $t("login.profile") }}</label
         >
-        <input
-          type="password"
-          id="password"
-          v-model="password"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
-          placeholder="Enter your password"
-        />
-        <div
-          class="absolute inset-y-0 right-0 flex items-center pr-2 cursor-pointer"
-          @click="togglePasswordVisibility"
+        <select
+          id="profile"
+          v-model="selectedProfile"
+          @change="updateProfile"
+          class="w-full cursor-pointer px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
         >
-          <svg
-            v-if="showPassword"
-            class="h-5 w-5 text-gray-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            ></path>
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M2 12s3 9 10 9 10-9 10-9M5 12a9 9 0 019-9 9 9 0 010 18 9 9 0 01-9-9z"
-            ></path>
-          </svg>
-          <svg
-            v-else
-            class="h-5 w-5 text-gray-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            ></path>
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M2 12s3 9 10 9 10-9 10-9M5 12a9 9 0 019-9 9 9 0 010 18 9 9 0 01-9-9z"
-            ></path>
-          </svg>
-        </div>
+          <option v-for="role in roles" :key="role.value" :value="role.value">
+            {{ role.displayValue }}
+          </option>
+        </select>
       </div>
 
       <!-- "Forgot password" link with underline only on "Click here" -->
-      <div class="mb-4">
+      <!-- <div class="mb-4">
         <p>
           Forgot your password?
           <a href="#" class="text-blue-500 underline">Click here</a>
         </p>
-      </div>
+      </div> -->
 
-      <!-- Black-colored Login button -->
       <button
-        class="bg-yellow-400 text-black font-bold py-2 px-4 rounded-md w-full hover:bg-gray-800 focus:outline-none focus:ring focus:border-gray-700"
-        @click.prevent="login"
+        class="bg-yellow-400 text-black font-bold py-2 px-4 rounded-md w-full hover:bg-yellow-500 focus:outline-none focus:ring focus:border-gray-700"
+        @click.prevent="SignIn"
       >
-        Login
+        {{ $t("loginBtn") }}
       </button>
     </form>
   </div>
 </template>
 
 <script>
+import { PublicClientApplication } from "@azure/msal-browser";
+import { environment } from "../../environment";
+import request from "../../utils/request";
 export default {
   name: "LoginScreen",
   data() {
     return {
-      email: "",
-      password: "",
-      showPassword: false,
+      GRAPH_ENDPOINT: "https://graph.microsoft.com/v1.0/me",
+      GRAPH_ENDPOINT_MEMBER_OF: "https://graph.microsoft.com/v1.0/me/memberOf",
+      account: undefined,
+      profile: "",
+      userInfo: "",
+      loggedIn: false,
+      accessToken: "",
+      error: "",
+      returnUrl: "",
+      userData: "",
+      selectedLanguage: "en-GB",
+      selectedProfile: "WILSON_CTS_Agents",
+      languages: [
+        { language: "English", value: "en-GB", locale: "en-GB" },
+        { language: "German", value: "de-DE", locale: "de-DE" },
+        { language: "Slovak", value: "sk-SK", locale: "sk-SK" },
+      ],
+      roles: [
+        { value: "WILSON_CTS_Agents", displayValue: "csAgent" },
+        {
+          value: "WILSON_Warehouse_Staff_Hoppegarten",
+          displayValue: "warehouseStaffHoppegarten",
+        },
+        {
+          value: "WILSON_Warehouse_Staff_KaLi",
+          displayValue: "warehouseStaffKaLi",
+        },
+        {
+          value: "WILSON_Warehouse_Staff_SK",
+          displayValue: "warehouseStaffSK",
+        },
+        { value: "Variable_Refund_Uploader", displayValue: "M & A Director" },
+        { value: "WILSON_C2R_Staff", displayValue: "C2R Team" },
+      ],
     };
   },
+  async created() {
+    this.$msalInstance = new PublicClientApplication(
+      this.$store.state.msalConfig
+    );
+  },
+  async mounted() {
+    this.updateLanguage()
+    const storedLanguage = localStorage.getItem("userPreferredLanguage");
+    if (storedLanguage) {
+      this.selectedLanguage = storedLanguage;
+    }
+    await this.$msalInstance.initialize();
+    const accounts = this.$msalInstance.getAllAccounts();
+    if (accounts.length == 0) {
+      return;
+    }
+    this.account = accounts[0];
+
+    // this.$emitter.emit("login", this.account);
+  },
   methods: {
-    togglePasswordVisibility() {
-      this.showPassword = !this.showPassword;
+    async SignIn() {
+      try {
+        await this.$msalInstance.loginPopup({
+          scopes: ["user.read", "Directory.Read.All"],
+        });
+        const accounts = this.$msalInstance.getAllAccounts();
+        if (accounts.length > 0) {
+          this.account = accounts[0];
+          // Now, you can acquire token and make a request to Microsoft Graph API
+          await this.acquireTokenAndMakeGraphRequest();
+        }
+        // .then(() => {
+        //   this.account = myAccounts[0];
+        //   // this.$emitter.emit("login", this.account);
+        // })
+      } catch (error) {
+        console.error(`error during authentication: ${error}`);
+      }
     },
-    login() {
-      // Implement your login logic here
-      console.log("Login clicked");
+    async acquireTokenAndMakeGraphRequest() {
+      try {
+        const tokenResponse = await this.$msalInstance.acquireTokenSilent({
+          account: this.account,
+          scopes: ["user.read", "Directory.Read.All"],
+        });
+        console.log(tokenResponse)
+        localStorage.setItem("token", tokenResponse.accessToken);
+        // Use the obtained token for authorization
+        const reqHeader = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
+        };
+
+        // Make a request to Microsoft Graph API
+        const graphResponse = await fetch(this.GRAPH_ENDPOINT_MEMBER_OF, {
+          headers: reqHeader,
+        })
+          .then((res) => res.json())
+          .then((response) => {
+            this.profile = response;
+            var roleFound = false;
+            var specialRole = false;
+            for (let memberof of this.profile.value) {
+              if (
+                memberof.displayName == "SEC-Developer-Admin" ||
+                memberof.displayName == "QM&Returns"
+              ) {
+                specialRole = true;
+                roleFound = true;
+                break;
+              }
+            }
+            if (specialRole == false) {
+              for (let memberof of this.profile.value) {
+                if (memberof.displayName == this.selectedProfile.value) {
+                  roleFound = true;
+                  specialRole = true;
+                  break;
+                }
+              }
+            }
+            if (roleFound === false || specialRole === false) {
+              this.error = "user not found";
+              // this.loginInvalid = true;
+            } else {
+              roleFound = true;
+              const checkGraphResponse = fetch(this.GRAPH_ENDPOINT, {
+                headers: reqHeader,
+              })
+                .then((res) => res.json())
+                .then((user) => {
+                  this.userInfo = user;
+                  var payload = {
+                    firstName: this.userInfo.givenName,
+                    lastName: this.userInfo.surname,
+                    email: this.userInfo.userPrincipalName,
+                    role: this.selectedProfile,
+                  };
+                  request
+                    .post(`${environment.apiUrl}/api/employee/login-employee`, {
+                      body: payload,
+                    })
+                    .then((data) => {
+                      this.userData = data;
+                      if (data !== null) {
+                        localStorage.setItem(
+                          "currentUser",
+                          JSON.stringify(this.userData)
+                        );
+                      }
+                      console.log(this.userData.data.data.role.id);
+                      if (this.userData.data.data.role.id != null) {
+                        this.fetchConsequentialDamage();
+                        // this.fetchReturnReasons()
+                      }
+                    });
+                });
+            }
+          });
+        // const graphData = await graphResponse.json();
+        // console.log("Graph Data:", graphData);
+      } catch (error) {
+        console.error(
+          "Error during token acquisition or Graph API request:",
+          error
+        );
+      }
+    },
+
+    updateLanguage() {
+      localStorage.setItem("userPreferredLanguage", this.selectedLanguage);
+      this.$i18n.locale = this.selectedLanguage;
+    },
+    updateProfile() {
+      // Your logic when profile changes
+    },
+    fetchConsequentialDamage() {
+      let appRoleId = this.userData.data.data.role.id;
+      request
+        .get(`${environment.apiUrl}/api/returns/get-consequential-damage`, {
+          params: { appRoleId },
+        })
+        .then((data) => {
+          console.log(data);
+        });
     },
   },
 };

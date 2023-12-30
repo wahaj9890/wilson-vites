@@ -1,6 +1,6 @@
 <template>
   <div class="pt-2">
-    <table class="w-full border border-gray-300 ">
+    <table class="w-full border border-gray-300">
       <thead>
         <tr>
           <th
@@ -17,7 +17,8 @@
           </th>
         </tr>
       </thead>
-      <tbody>
+      <h3 v-if="returnData.length === 0">No data</h3>
+      <tbody v-else>
         <tr
           v-for="(item, index) in returnData"
           :key="item.key"
@@ -28,8 +29,8 @@
             :key="column.key"
             :class="[
               'border border-gray-300 p-2',
-              index % 2 === 0 ? 'bg-[#F0F0F0]' : '' /* Even rows */,
-              index % 2 !== 0 ? 'bg-[#F7F7F7]' : '' /* Odd rows */,
+              index % 2 === 0 ? 'bg-[#F0F0F0]' : '' ,
+              index % 2 !== 0 ? 'bg-[#F7F7F7]' : '' 
             ]"
           >
             {{ item[column.key] }}
@@ -41,7 +42,9 @@
             >
               Create
             </button>
-            <button class="bg-[#FFFFFF] text-black border px-2 py-1 ">Manage</button>
+            <button class="bg-[#FFFFFF] text-black border px-2 py-1">
+              Manage
+            </button>
           </div>
         </tr>
       </tbody>
@@ -52,18 +55,25 @@
 <script>
 import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
+import { useStore } from "vuex";
+
 export default {
   name: "ReturnDetails",
   props: [""],
   setup(props) {
     const router = useRouter();
+    const apiData = ref([]);
+    const store = useStore();
+    // const searchOrders = computed(
+    //   () => store.state.searchReturnOrder.searchOrders
+    // );
     const returnColumns = ref([
       {
-        key: "customerNo",
+        key: "customerNumber",
         label: "Customer No.",
       },
       {
-        key: "invoiceNo",
+        key: "invoiceNumber",
         label: "Invoice No.",
       },
       {
@@ -79,7 +89,7 @@ export default {
         label: "Currency",
       },
       {
-        key: "expirationDate",
+        key: "expiryDate",
         label: "Expiration Date",
       },
       {
@@ -126,12 +136,23 @@ export default {
         download: "None",
       },
     ]);
-    onMounted(() => {});
-
     function navigateToCreateReturn() {
       router.push("/returns/create-return");
     }
-    return { returnColumns, returnData, navigateToCreateReturn };
+
+    store.watch(
+      () => store.state.searchReturnOrder.searchOrders,
+      (newData) => {
+        apiData.value = newData;
+      }
+    );
+    return {
+      returnColumns,
+      returnData,
+      apiData,
+      // searchOrders,
+      navigateToCreateReturn,
+    };
   },
 };
 </script>
