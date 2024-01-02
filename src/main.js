@@ -8,7 +8,7 @@ import { createMsalPlugin } from "./msalplugin"
 import i18n from "./i18ns/i18n"
 
 const app = createApp(App);
-app.use(createMsalPlugin())
+// app.use(createMsalPlugin())
 app.use(i18n)
 app.config.globalProperties.$msalInstance = {};
 app.use(router).use(store).mount('#app')

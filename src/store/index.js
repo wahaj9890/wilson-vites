@@ -20,18 +20,15 @@ export default createStore({
     };
   },
   mutations: {
-    // Your mutations go here
     setAccessToken(state, token) {
       state.accessToken = token;
     }
   },
   actions: {
-    // Your actions go here
   },
   modules: {
     searchReturnOrder,
     global
-    // Your modules go here
   },
   plugins: [createPersistedState({
     paths: ['searchReturnOrder.searchOrders'],

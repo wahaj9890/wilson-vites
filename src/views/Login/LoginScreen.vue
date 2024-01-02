@@ -39,7 +39,7 @@
         <select
           id="profile"
           v-model="selectedProfile"
-          @change="updateProfile"
+          @change="updateProfile(selectedProfile)"
           class="w-full cursor-pointer px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
         >
           <option v-for="role in roles" :key="role.value" :value="role.value">
@@ -70,6 +70,8 @@
 import { PublicClientApplication } from "@azure/msal-browser";
 import { environment } from "../../environment";
 import request from "../../utils/request";
+import { useRouter } from "vue-router";
+
 export default {
   name: "LoginScreen",
   data() {
@@ -82,7 +84,7 @@ export default {
       loggedIn: false,
       accessToken: "",
       error: "",
-      returnUrl: "",
+      returnUrl: "/returns",
       userData: "",
       selectedLanguage: "en-GB",
       selectedProfile: "WILSON_CTS_Agents",
@@ -116,37 +118,32 @@ export default {
     );
   },
   async mounted() {
-    this.updateLanguage()
+    this.updateLanguage();
+    let currentUserValue = localStorage.getItem("currentUser");
+    if (currentUserValue) {
+      this.$router.push({ name: "returns" });
+    }
     const storedLanguage = localStorage.getItem("userPreferredLanguage");
     if (storedLanguage) {
       this.selectedLanguage = storedLanguage;
     }
     await this.$msalInstance.initialize();
-    const accounts = this.$msalInstance.getAllAccounts();
-    if (accounts.length == 0) {
-      return;
-    }
-    this.account = accounts[0];
-
-    // this.$emitter.emit("login", this.account);
+    this.account = this.$msalInstance.getAllAccounts();
   },
   methods: {
     async SignIn() {
       try {
         await this.$msalInstance.loginPopup({
-          scopes: ["user.read", "Directory.Read.All"],
+          // scopes: ["user.read", "Directory.Read.All"],
+          scopes: ["user.read", "openid", "profile"],
         });
-        const accounts = this.$msalInstance.getAllAccounts();
-        if (accounts.length > 0) {
-          this.account = accounts[0];
-          // Now, you can acquire token and make a request to Microsoft Graph API
+        this.account = this.$msalInstance.getAllAccounts();
+        if (this.account.length > 0) {
+          this.account = this.account[0];
           await this.acquireTokenAndMakeGraphRequest();
         }
-        // .then(() => {
-        //   this.account = myAccounts[0];
-        //   // this.$emitter.emit("login", this.account);
-        // })
       } catch (error) {
+        alert(" Error Login");
         console.error(`error during authentication: ${error}`);
       }
     },
@@ -156,8 +153,6 @@ export default {
           account: this.account,
           scopes: ["user.read", "Directory.Read.All"],
         });
-        console.log(tokenResponse)
-        localStorage.setItem("token", tokenResponse.accessToken);
         // Use the obtained token for authorization
         const reqHeader = {
           "Content-Type": "application/json",
@@ -218,20 +213,38 @@ export default {
                       if (data !== null) {
                         localStorage.setItem(
                           "currentUser",
-                          JSON.stringify(this.userData)
+                          JSON.stringify(this.userData.data.data)
                         );
+                        this.$store.state.global.authenticatedUser = true;
                       }
-                      console.log(this.userData.data.data.role.id);
+
                       if (this.userData.data.data.role.id != null) {
                         this.fetchConsequentialDamage();
-                        // this.fetchReturnReasons()
+                        this.fetchReturnReasons();
+                      }
+
+                      if (
+                        this.userData !== null ||
+                        this.userData !== undefined
+                      ) {
+                        const currentUserRole =
+                          localStorage.getItem("currentUserRole");
+                        if (currentUserRole === "Variable_Refund_Uploader") {
+                          this.returnUrl = "variable-refunds/variable-refunds";
+                        } else if (currentUserRole === "C2R_Staff") {
+                          this.returnUrl = "returns/bulk-return";
+                        } else {
+                          this.returnUrl = "returns/return-order";
+                        }
+
+                        this.$router.push("/returns");
                       }
                     });
+                  return user.data;
                 });
             }
           });
         // const graphData = await graphResponse.json();
-        // console.log("Graph Data:", graphData);
       } catch (error) {
         console.error(
           "Error during token acquisition or Graph API request:",
@@ -239,13 +252,43 @@ export default {
         );
       }
     },
-
+    async signOut() {
+      const variable_Refund_Uploader = localStorage.getItem("currentUserRole");
+      if (variable_Refund_Uploader) {
+        localStorage.removeItem("currentUserRole");
+      }
+      localStorage.removeItem("currentUser");
+      localStorage.removeItem("userPreferredLanguage");
+      localStorage.removeItem("consequentialDamage");
+      localStorage.removeItem("ReturnReasonsScene_Damage_true_coolingOff_true");
+      localStorage.removeItem(
+        "ReturnReasonsScene_Damage_true_coolingOff_false"
+      );
+      localStorage.removeItem(
+        "ReturnReasonsScene_Damage_false_coolingOff_true"
+      );
+      localStorage.removeItem(
+        "ReturnReasonsScene_Damage_false_coolingOff_false"
+      );
+      this.$store.state.global.authenticatedUser = false;
+      this.$router.push("/");
+      this.$emit("close");
+    },
     updateLanguage() {
       localStorage.setItem("userPreferredLanguage", this.selectedLanguage);
       this.$i18n.locale = this.selectedLanguage;
     },
     updateProfile() {
-      // Your logic when profile changes
+      if (this.selectedProfile === "Variable_Refund_Uploader") {
+        localStorage.setItem("currentUserRole", "Variable_Refund_Uploader");
+      } else if (this.selectedProfile === "WILSON_C2R_Staff") {
+        localStorage.setItem("currentUserRole", "C2R_Staff");
+      } else {
+        const currentUserRole = localStorage.getItem("currentUserRole");
+        if (currentUserRole) {
+          localStorage.removeItem("currentUserRole");
+        }
+      }
     },
     fetchConsequentialDamage() {
       let appRoleId = this.userData.data.data.role.id;
@@ -254,8 +297,51 @@ export default {
           params: { appRoleId },
         })
         .then((data) => {
-          console.log(data);
+          localStorage.setItem(
+            "consequentialDamage",
+            JSON.stringify(data.data.data)
+          );
         });
+    },
+    fetchReturnReasons() {
+      const payloads = [
+        {
+          payload: {
+            appRoleId: this.userData.data.data.role.id,
+            consequentialDamage: true,
+            coolingOff: true,
+          },
+          keys: "ReturnReasonsScene_Damage_true_coolingOff_true",
+        },
+        {
+          payload: {
+            appRoleId: this.userData.data.data.role.id,
+            consequentialDamage: true,
+            coolingOff: false,
+          },
+          keys: "ReturnReasonsScene_Damage_true_coolingOff_false",
+        },
+        {
+          payload: {
+            appRoleId: this.userData.data.data.role.id,
+            consequentialDamage: false,
+            coolingOff: true,
+          },
+          keys: "ReturnReasonsScene_Damage_false_coolingOff_true",
+        },
+        {
+          payload: {
+            appRoleId: this.userData.data.data.role.id,
+            consequentialDamage: false,
+            coolingOff: false,
+          },
+          keys: "ReturnReasonsScene_Damage_false_coolingOff_false",
+        },
+      ];
+
+      payloads.forEach((item) => {
+        this.$store.dispatch("fetchRegistrationReasons", item);
+      });
     },
   },
 };

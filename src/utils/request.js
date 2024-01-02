@@ -1,43 +1,3 @@
-// // request.js
-// import axios from 'axios';
-
-// const api = axios.create({
-//   baseURL: 'https://your-api-base-url.com', // Replace with your API base URL
-// });
-
-// export const httpGet = async (url, params = {}) => {
-//   try {
-//     const response = await api.get(url, { params });
-//     return response.data;
-//   } catch (error) {
-//     console.error('GET request error:', error);
-//     throw error; // Re-throw to handle in components
-//   }
-// };
-
-// export const httpPost = async (url, data) => {
-//   try {
-//     const response = await api.post(url, data);
-//     return response.data;
-//   } catch (error) {
-//     console.error('POST request error:', error);
-//     throw error; // Re-throw to handle in components
-//   }
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // httpService.js
 import axios from 'axios';
 
@@ -47,23 +7,18 @@ const instance = axios.create({
 
 // Add an interceptor to include the Authorization token in each request
 instance.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
+    const token = JSON.parse(localStorage.getItem('currentUser'))?.contactLogin?.token;
     let culture = localStorage.getItem('userPreferredLanguage');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
-
-    // Include Content-Type header for POST requests
-    if (config.method === 'post') {
+    if (config.method === 'post' || config.method === 'get') {
         config.headers['Content-Type'] = 'application/json';
     }
-    if (culture === null || culture === undefined) {
-        culture = 'en'
-    } else {
-        config.headers['Accept-Language'] = culture;
-
-    }
-
+    // if (culture) {
+    //     const separator = config.url.includes('?') ? '&' : '?'; // Use appropriate separator based on existing query parameters
+    //     config.url = `${config.url}${separator}culture=${encodeURIComponent(culture)}`;
+    //   }
     return config;
 });
 

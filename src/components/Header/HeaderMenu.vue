@@ -27,6 +27,8 @@ export default {
     return {
       isSidebarOpen: false,
       welcomeTitle: "Welcome in Wilson",
+      token: JSON.parse(localStorage.getItem("currentUser"))?.contactLogin
+        ?.token,
     };
   },
   components: {
@@ -34,7 +36,9 @@ export default {
   },
   methods: {
     toggleSidebar() {
-      this.isSidebarOpen = !this.isSidebarOpen;
+      if (this.$store.state.global.authenticatedUser) {
+        this.isSidebarOpen = !this.isSidebarOpen;
+      }
     },
     closeSidebar() {
       this.isSidebarOpen = false;
