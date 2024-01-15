@@ -5,6 +5,9 @@
     <p class="font-bold underline md:hidden">
       {{ $t("login.wilson.welcome") }}
     </p>
+    <div v-if="!hideSpinner" class="flex gap-4 flex-wrap" >
+      <SfLoaderCircular class="!ring-yellow-200" size="2xl" />
+    </div>
     <form class="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
       <h2 class="text-2xl font-bold mb-6">{{ $t("loginBtn") }}</h2>
 
@@ -48,14 +51,6 @@
         </select>
       </div>
 
-      <!-- "Forgot password" link with underline only on "Click here" -->
-      <!-- <div class="mb-4">
-        <p>
-          Forgot your password?
-          <a href="#" class="text-blue-500 underline">Click here</a>
-        </p>
-      </div> -->
-
       <button
         class="bg-yellow-400 text-black font-bold py-2 px-4 rounded-md w-full hover:bg-yellow-500 focus:outline-none focus:ring focus:border-gray-700"
         @click.prevent="SignIn"
@@ -71,6 +66,8 @@ import { PublicClientApplication } from "@azure/msal-browser";
 import { environment } from "../../environment";
 import request from "../../utils/request";
 import { useRouter } from "vue-router";
+import { mapState, mapActions } from "vuex";
+import { SfLoaderCircular } from "@storefront-ui/vue";
 
 export default {
   name: "LoginScreen",
@@ -82,6 +79,7 @@ export default {
       profile: "",
       userInfo: "",
       loggedIn: false,
+      hideSpinner:true,
       accessToken: "",
       error: "",
       returnUrl: "/returns",
@@ -112,6 +110,14 @@ export default {
       ],
     };
   },
+  components: {
+    SfLoaderCircular,
+  },
+  computed: {
+    ...mapState({
+      isAuthenticatedUser: (state) => state.global.authenticatedUser,
+    }),
+  },
   async created() {
     this.$msalInstance = new PublicClientApplication(
       this.$store.state.msalConfig
@@ -120,8 +126,10 @@ export default {
   async mounted() {
     this.updateLanguage();
     let currentUserValue = localStorage.getItem("currentUser");
+
     if (currentUserValue) {
       this.$router.push({ name: "returns" });
+      this.$store.dispatch("global/clearAllState");
     }
     const storedLanguage = localStorage.getItem("userPreferredLanguage");
     if (storedLanguage) {
@@ -138,6 +146,7 @@ export default {
           scopes: ["user.read", "openid", "profile"],
         });
         this.account = this.$msalInstance.getAllAccounts();
+        
         if (this.account.length > 0) {
           this.account = this.account[0];
           await this.acquireTokenAndMakeGraphRequest();
@@ -189,9 +198,11 @@ export default {
             }
             if (roleFound === false || specialRole === false) {
               this.error = "user not found";
+              this.hideSpinner = true;
               // this.loginInvalid = true;
             } else {
               roleFound = true;
+              this.hideSpinner = false;
               const checkGraphResponse = fetch(this.GRAPH_ENDPOINT, {
                 headers: reqHeader,
               })
@@ -215,8 +226,9 @@ export default {
                           "currentUser",
                           JSON.stringify(this.userData.data.data)
                         );
-                        this.$store.state.global.authenticatedUser = true;
                       }
+                      // this.isAuthenticatedUser = true;
+                      this.$store.dispatch("global/clearAllState");
 
                       if (this.userData.data.data.role.id != null) {
                         this.fetchConsequentialDamage();
@@ -270,9 +282,10 @@ export default {
       localStorage.removeItem(
         "ReturnReasonsScene_Damage_false_coolingOff_false"
       );
-      this.$store.state.global.authenticatedUser = false;
       this.$router.push("/");
       this.$emit("close");
+      // this.$store.commit("clearModuleStates");
+      this.$store.dispatch("global/clearAllState");
     },
     updateLanguage() {
       localStorage.setItem("userPreferredLanguage", this.selectedLanguage);
@@ -340,7 +353,7 @@ export default {
       ];
 
       payloads.forEach((item) => {
-        this.$store.dispatch("fetchRegistrationReasons", item);
+        this.$store.dispatch("global/fetchRegistrationReasons", item);
       });
     },
   },

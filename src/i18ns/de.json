@@ -2,5 +2,13 @@
   "login.wilson.welcome": "Willkommen in Wilson",
   "login.language": "Sprache",
   "login.profile": "Profil",
-  "loginBtn": "Anmeldung"
+  "loginBtn": "Anmeldung",
+  "return.search.for": "Suchen nach",
+  "return.order.number": "Bestellnummer",
+  "return.customer.number": "Kundennummer",
+  "return.invoice.number": "Rechnungsnummer",
+  "return.customerReference.number": "Kunden Referenznummer",
+  "return.tracking.number": "Tracking-Nummer",
+  "return.search": "Suchen",
+  "return.order.by": "Sortieren nach"
 }

@@ -1,11 +1,16 @@
-import axios from "axios"
 import { environment } from "../../environment"
+import request from "../../utils/request"
 export const searchReturnOrder = {
-    // namespaced: true,
+    namespaced: true,
     state: {
         searchOrders: [],
-        orderItemsToReturn: [],
+        globalSearch: '',
+        orderItemsToReturn: {},
         getOrderDetails: [],
+        userPreferredLang: localStorage.getItem('userPreferredLanguage'),
+        getCompensation: [],
+        setCarriersRec4po: [],
+        group:"asdf",
     },
     mutations: {
         SET_RETURN_ORDER(state, data) {
@@ -13,34 +18,73 @@ export const searchReturnOrder = {
         },
         SET_ORDER_ITEM_TO_RETURN(state, data) {
             state.orderItemsToReturn = data.data;
-            // console.log(state.orderItemsToReturn)
         },
         SET_ORDER_DETAILS(state, data) {
-            state.getOrderDetails = data.data;
+            const { orders, ...rest } = data.data;
+
+            state.getOrderDetails = {
+                ...rest,
+                orders: orders.map(item => {
+                    const expiryDate = item.coolingOffExpirationDate
+                        ? new Date(item.coolingOffExpirationDate)
+                        : new Date(item.orderDate);
+
+                    expiryDate.setDate(expiryDate.getDate() + (item.expiryDays || 0));
+
+                    return { ...item, expiryDate };
+                })
+            };
+        },
+        SEARCH_RETURN_ORDER(state, data) {
+            state.globalSearch = data
+        },
+        SET_COMPENSATION(state, data) {
+            state.getCompensation = data.data
+        },
+        SET_CARRIER_RECAPO(state, data) {
+            state.setCarriersRec4po = data
         }
     },
     actions: {
-        async searchReturnAction({ commit }, newData) {
+        storeData({ commit }, payload) {
+            commit('SEARCH_RETURN_ORDER', payload);
+        },
+        async searchReturnAction({ commit, state }, newData) {
             try {
-                const response = await axios.post("https://wilson-api-dev01d-featuretest2.azurewebsites.net/api/orders/search-orders?culture=en-GB", newData);
-                // const response = await axios.post("../../../public/searachReturn.json", newData);
+                const response = await request.post(`${environment.apiUrl}/api/orders/search-orders?culture=${state.userPreferredLang}`, { body: newData });
                 commit('SET_RETURN_ORDER', response.data);
             } catch (error) {
                 console.error('Error posting data:', error);
             }
         },
-        async getOrdersToReturn({ commit },) {
+        async getOrdersToReturn({ commit }, payload) {
             try {
-                const response = await axios.get('../../public/getReturnOrder.json');
+                const response = await request.get(`${environment.apiUrl}/api/returns/get-orders-items-to-returns`, { params: payload });
                 commit('SET_ORDER_ITEM_TO_RETURN', response.data);
             } catch (error) {
                 console.error('Error posting data:', error);
             }
         },
-        async getOrderDetailsAction({ commit }, newData) {
+        async getOrderDetailsAction({ commit, state }) {
             try {
-                const response = await axios.post('../../public/getOrderDetails.json', newData);
+                const response = await request.post(`${environment.apiUrl}/api/orders/get-orders-details?culture=${state.userPreferredLang}`, { body: state.globalSearch });
                 commit('SET_ORDER_DETAILS', response.data);
+            } catch (error) {
+                console.error('Error posting data:', error);
+            }
+        },
+        async fetchCompensation({ commit, state }, payload) {
+            try {
+                const response = await request.get(`${environment.apiUrl}/api/returns/get-compensations?culture=${state.userPreferredLang}`, { params: payload });
+                commit('SET_COMPENSATION', response.data);
+            } catch (error) {
+                console.error('Error getting data:', error);
+            }
+        },
+        async fetchReturnCarriersRec4po({ commit, state }, payload) {
+            try {
+                const response = await request.post(`${environment.apiRec4poUrl}/order/cost`, payload );
+                commit('SET_CARRIER_RECAPO', response.data);
             } catch (error) {
                 console.error('Error posting data:', error);
             }

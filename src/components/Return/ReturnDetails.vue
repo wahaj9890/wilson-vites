@@ -8,20 +8,20 @@
             :key="column.key"
             :class="[
               'border border-gray-300 p-2 text-left',
-              'bg-gray-100' /* Base background color */,
-              index % 2 === 0 ? 'bg-[#F0F0F0]' : '' /* Even rows */,
-              index % 2 !== 0 ? 'bg-[#F7F7F7]' : '' /* Odd rows */,
+              'bg-gray-100' ,
+              index % 2 === 0 ? 'bg-[#F0F0F0]' : '' ,
+              index % 2 !== 0 ? 'bg-[#F7F7F7]' : '' ,
             ]"
           >
             {{ column.label }}
           </th>
         </tr>
       </thead>
-      <h3 v-if="returnData.length === 0">No data</h3>
+      <h3 v-if="searchOrders?.length === 0">No data</h3>
       <tbody v-else>
         <tr
-          v-for="(item, index) in returnData"
-          :key="item.key"
+          v-for="(item, index) in searchOrders"
+          :key="index"
           :class="['bg-white hover:bg-gray-50']"
         >
           <td
@@ -29,8 +29,8 @@
             :key="column.key"
             :class="[
               'border border-gray-300 p-2',
-              index % 2 === 0 ? 'bg-[#F0F0F0]' : '' ,
-              index % 2 !== 0 ? 'bg-[#F7F7F7]' : '' 
+              index % 2 === 0 ? 'bg-[#F0F0F0]' : '',
+              index % 2 !== 0 ? 'bg-[#F7F7F7]' : '',
             ]"
           >
             {{ item[column.key] }}
@@ -38,7 +38,7 @@
           <div class="flex flex-col gap-1">
             <button
               class="bg-[#F3E43E] text-black font-semibold px-2 py-1"
-              @click="navigateToCreateReturn"
+              @click="navigateToCreateReturn(item.orderId)"
             >
               Create
             </button>
@@ -64,9 +64,13 @@ export default {
     const router = useRouter();
     const apiData = ref([]);
     const store = useStore();
-    // const searchOrders = computed(
-    //   () => store.state.searchReturnOrder.searchOrders
-    // );
+    const searchOrders = computed(
+      () => store.state.searchReturnOrder.searchOrders
+    );
+    const isAuthenticatedUser = computed(
+      () => store.state.global.authenticatedUser
+    );
+
     const returnColumns = ref([
       {
         key: "customerNumber",
@@ -102,42 +106,42 @@ export default {
       },
     ]);
     const returnData = ref([
-      {
-        id: 1,
-        customerNo: "12345679",
-        invoiceNo: "321654784",
-        orderDate: "2022-03-12",
-        returnCreation: "2022-02-20",
-        currency: "EUR",
-        expirationDate: "2024-05-09",
-        status: "Approved",
-        download: "None",
-      },
-      {
-        id: 2,
-        customerNo: "12345679",
-        invoiceNo: "321654784",
-        orderDate: "2022-03-12",
-        returnCreation: "2022-02-20",
-        currency: "EUR",
-        expirationDate: "2024-05-09",
-        status: "Approved",
-        download: "None",
-      },
-      {
-        id: 3,
-        customerNo: "12345679",
-        invoiceNo: "321654784",
-        orderDate: "2022-03-12",
-        returnCreation: "2022-02-20",
-        currency: "EUR",
-        expirationDate: "2024-05-09",
-        status: "Approved",
-        download: "None",
-      },
+      // {
+      //   id: 1,
+      //   customerNo: "12345679",
+      //   invoiceNo: "321654784",
+      //   orderDate: "2022-03-12",
+      //   returnCreation: "2022-02-20",
+      //   currency: "EUR",
+      //   expirationDate: "2024-05-09",
+      //   status: "Approved",
+      //   download: "None",
+      // },
+      // {
+      //   id: 2,
+      //   customerNo: "12345679",
+      //   invoiceNo: "321654784",
+      //   orderDate: "2022-03-12",
+      //   returnCreation: "2022-02-20",
+      //   currency: "EUR",
+      //   expirationDate: "2024-05-09",
+      //   status: "Approved",
+      //   download: "None",
+      // },
+      // {
+      //   id: 3,
+      //   customerNo: "12345679",
+      //   invoiceNo: "321654784",
+      //   orderDate: "2022-03-12",
+      //   returnCreation: "2022-02-20",
+      //   currency: "EUR",
+      //   expirationDate: "2024-05-09",
+      //   status: "Approved",
+      //   download: "None",
+      // },
     ]);
-    function navigateToCreateReturn() {
-      router.push("/returns/create-return");
+    function navigateToCreateReturn(orderId) {
+      router.push({ name: "create-return", query: { orderId: orderId } });
     }
 
     store.watch(
@@ -150,7 +154,8 @@ export default {
       returnColumns,
       returnData,
       apiData,
-      // searchOrders,
+      searchOrders,
+      isAuthenticatedUser,
       navigateToCreateReturn,
     };
   },

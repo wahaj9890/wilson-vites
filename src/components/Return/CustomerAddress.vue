@@ -1,3 +1,41 @@
+<script>
+import { ref, computed, onMounted } from "vue";
+import { useStore } from "vuex";
+export default {
+  name: "CustomerAddress",
+  setup() {
+    const store = useStore();
+    const showCustomerAddress = ref(false);
+    const showReturnInformation = ref(false);
+    const showNewAddressTable = ref(false);
+
+    const toggleCustomerInformation = () => {
+      showReturnInformation.value = !showReturnInformation.value;
+    };
+    const toggleCustomerAddress = () => {
+      showCustomerAddress.value = !showCustomerAddress.value;
+    };
+    const deliveryAddress = computed(
+      () => store.state.searchReturnOrder.orderItemsToReturn.deliveryAddress
+    );
+    const saveNewAddress = () => {};
+    const deleteAddress = () => {
+      showNewAddressTable.value = false;
+    };
+    onMounted(() => {});
+    return {
+      deliveryAddress,
+      showCustomerAddress,
+      showReturnInformation,
+      showNewAddressTable,
+      toggleCustomerInformation,
+      toggleCustomerAddress,
+      saveNewAddress,
+      deleteAddress
+    };
+  },
+};
+</script>
 <template>
   <div>
     <div class="flex space-x-8 p-8">
@@ -22,37 +60,119 @@
             <tbody>
               <tr class="bg-gray-200 text-black mb-2">
                 <td class="p-2 font-bold">Name</td>
-                <td class="p-2">Wqahaj baba</td>
+                <td class="p-2">
+                  {{ deliveryAddress.firstName + deliveryAddress.lastName }}
+                </td>
               </tr>
               <tr class="bg-gray-100 text-black mb-2">
                 <td class="p-2 font-bold">Street</td>
-                <td class="p-2">near airptor road</td>
+                <td class="p-2">{{ deliveryAddress.street }}</td>
               </tr>
               <tr class="bg-gray-200 text-black mb-2">
                 <td class="p-2 font-bold">Postal Code</td>
-                <td class="p-2">1000177454</td>
+                <td class="p-2">{{ deliveryAddress.postalCode }}</td>
               </tr>
               <tr class="bg-gray-100 text-black mb-2">
                 <td class="p-2 font-bold">City</td>
-                <td class="p-2">Ned</td>
+                <td class="p-2">{{ deliveryAddress.cityName }}</td>
               </tr>
               <tr class="bg-gray-200 text-black mb-2">
                 <td class="p-2 font-bold">Country</td>
-                <td class="p-2">Ind</td>
+                <td class="p-2">{{ deliveryAddress.countryName }}</td>
               </tr>
               <tr class="bg-gray-100 text-black mb-2">
                 <td class="p-2 font-bold">Addition Info.</td>
-                <td class="p-2">-</td>
+                <td class="p-2">{{ deliveryAddress.additionalDetails }}</td>
               </tr>
-              <tr class="bg-gray-200 text-black mb-2">
-                <td class="p-2 font-bold">Article No.</td>
-                <td><button>Add new Address</button></td>
-              </tr>
-
-              <!-- Add more rows for other fields as needed -->
             </tbody>
           </table>
         </transition>
+        <div v-if="showCustomerAddress" class="flex justify-end mt-2">
+          <button
+            @click="showNewAddressTable = true"
+            class="py-2 px-4 bg-white border border-black rounded"
+          >
+            Add new Address
+          </button>
+        </div>
+
+        <table
+          v-if="showNewAddressTable"
+          class="w-full table-auto border border-gray-300 border-separate border-slate-400 mt-2"
+        >
+          <tbody>
+            <tr class="bg-gray-200 text-black mb-2">
+              <td class="p-2 font-bold">Alternative Name</td>
+              <td class="p-2">
+                <input
+                  type="text"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  placeholder="Name"
+                />
+              </td>
+            </tr>
+            <tr class="bg-gray-100 text-black mb-2">
+              <td class="p-2 font-bold">Alternative Street</td>
+              <td class="p-2">
+                <input
+                  type="text"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  placeholder="Street"
+                />
+              </td>
+            </tr>
+            <tr class="bg-gray-200 text-black mb-2">
+              <td class="p-2 font-bold">Alternative Postal Code</td>
+              <td class="p-2">
+                <input
+                  type="text"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  placeholder="Postal Code"
+                />
+              </td>
+            </tr>
+            <tr class="bg-gray-100 text-black mb-2">
+              <td class="p-2 font-bold">Alternative City</td>
+              <td class="p-2">
+                <input
+                  type="text"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  placeholder="City"
+                />
+              </td>
+            </tr>
+            <tr class="bg-gray-200 text-black mb-2">
+              <td class="p-2 font-bold">Alternative Country</td>
+              <td class="p-2 font-bold">
+                <select class="w-full p-2 border border-gray-300 rounded">
+                  <option value="option1">False</option>
+                  <option value="option2">True</option>
+                </select>
+              </td>
+            </tr>
+            <tr class="bg-gray-100 text-black mb-2">
+              <td class="p-2 font-bold">Addition Info.</td>
+              <input
+                type="text"
+                class="w-full p-2 border border-gray-300 rounded"
+                placeholder="City"
+              />
+            </tr>
+          </tbody>
+        </table>
+
+        <div v-if="showNewAddressTable" class="flex justify-end space-x-4 mt-2">
+          <button @click="saveNewAddress" class="py-2 px-4 bg-[#F3E43E] border">
+            Save New Address
+          </button>
+          <button
+            @click="deleteAddress"
+            class="py-2 px-4 bg-white border border-black"
+          >
+            Delete
+          </button>
+        </div>
+
         <div class="flex space-x-4 mt-4">
           <button
             class="py-2 px-4 bg-yellow-500 border border-gray-300 rounded"
@@ -77,7 +197,6 @@
               showReturnInformation ? 'fa-minus' : 'fa-plus',
             ]"
           ></i>
-          <!-- <span class="text-2xl float-right">+</span> -->
         </div>
         <transition name="fade">
           <table
@@ -130,26 +249,3 @@
     </div>
   </div>
 </template>
-
-<script>
-import { ref, computed } from "vue";
-export default {
-  name: "CustomerAddress",
-  setup() {
-    const showCustomerAddress = ref(false);
-    const showReturnInformation = ref(false);
-    const toggleCustomerInformation = () => {
-      showReturnInformation.value = !showReturnInformation.value;
-    };
-    const toggleCustomerAddress = () => {
-      showCustomerAddress.value = !showCustomerAddress.value;
-    };
-    return {
-      showCustomerAddress,
-      showReturnInformation,
-      toggleCustomerInformation,
-      toggleCustomerAddress,
-    };
-  },
-};
-</script>

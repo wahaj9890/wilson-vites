@@ -42,20 +42,26 @@
 <script>
 import { sidemenu } from "../../router/sidebar/sidemenu";
 import LoginScreen from "../../views/Login/LoginScreen.vue";
+import { useStore } from "vuex";
+import { mapState, mapActions } from "vuex";
 export default {
   data() {
     return {
       temp: LoginScreen.methods.signOut,
       isSidebarOpen: false,
       sidemenu: sidemenu,
-      token:this.$store.state.global.authenticatedUser
+      store: useStore(),
     };
   },
   props: {
     isOpen: Boolean,
   },
-  mounted() {
+  computed: {
+    ...mapState({
+      isAuthenticatedUser: (state) => state.global.authenticatedUser,
+    }),
   },
+  mounted() {},
   methods: {
     closeSidebar() {
       this.$emit("close");

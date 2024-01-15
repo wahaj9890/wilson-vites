@@ -17,20 +17,20 @@
         </button>
       </div>
 
-      <div class="flex items-center justify-between mb-4 bg-[#DDDDDD] cursor-pointer p-3" @click="toggleCardVisibility">
-        <h2 class="text-xl font-bold" >
-          Order Information
-        </h2>
+      <div
+        class="flex items-center justify-between mb-4 bg-[#DDDDDD] cursor-pointer p-3"
+        @click="toggleCardVisibility"
+      >
+        <h2 class="text-xl font-bold">Order Information</h2>
         <i :class="['fas', cardVisible ? 'fa-minus' : 'fa-plus']"></i>
       </div>
 
-      <div  class="flex items-center mb-4 bg-[#DDDDDD] p-3">
+      <div class="flex items-center mb-4 bg-[#DDDDDD] p-3">
         <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-500" />
         <h2 class="text-xl ml-3">Select all items</h2>
       </div>
 
       <transition name="fade">
-      <!-- Card Parent -->
         <div v-if="cardVisible" class="grid grid-cols-4 gap-4">
           <div
             :class="[
@@ -38,14 +38,18 @@
               index % 2 === 0 ? 'bg-[#F7F7F7]' : 'bg-[#DDDDDD]',
             ]"
             v-for="(orderItem, index) in orderInformation"
+            :key="orderItem.articleNumber"
           >
             <div>
               <h3 class="text-lg font-bold">{{ orderItem.articleNumber }}</h3>
               <p>Qty: {{ orderItem.quantity }}</p>
               <div class="flex items-center mb-2">
                 <input
+                  v-model="checkBoxSelected[index]"
                   type="checkbox"
                   class="form-checkbox h-5 w-5 text-blue-500"
+                  :disabled="orderItem.isKittingMaster || orderItem.isSetMaster"
+                  @change="checkBoxChanged(index,$event,orderItem)"
                 />
                 <p class="ml-2 truncate">{{ orderItem.articleDescription }}</p>
               </div>
@@ -69,11 +73,8 @@
               </div>
             </div>
             <div class="flex justify-end">
-              <img
-                src="https://filmfare.wwmindia.com/content/2022/oct/salman-khan-new-look-from-kisi-ka-bhai-kisi-ki-jaan.jpg"
-                alt="Product Image"
-                class="w-24 h-24"
-              />
+              <!-- src="https://filmfare.wwmindia.com/content/2022/oct/salman-khan-new-look-from-kisi-ka-bhai-kisi-ki-jaan.jpg" -->
+              <img alt="Product Image" class="w-24 h-24" />
             </div>
           </div>
         </div>
@@ -83,8 +84,8 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, computed, reactive } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
 
 export default {
@@ -92,21 +93,46 @@ export default {
   setup() {
     const router = useRouter();
     const store = useStore();
-    const cardVisible = ref(false);
-    const orderInformation = ref(
-      store.state.searchReturnOrder.orderItemsToReturn.orderItems
+    const cardVisible = ref(true);
+    const checkBoxChecked = ref(false);
+    const route = useRoute();
+    const returnOrderId = route.query.orderId;
+    const orderInformation = computed(
+      () => store.state.searchReturnOrder.orderItemsToReturn.orderItems || {}
     );
+    const checkBoxSelected = ref([]);
+    const payload = {
+      referenceNumber: returnOrderId,
+      orderItemId: "",
+      culture: localStorage.getItem("userPreferredLanguage"),
+    };
     const toggleCardVisibility = () => {
       cardVisible.value = !cardVisible.value;
     };
+
+    const checkBoxChanged = (index,event,orderItem) => {
+      let specificReasonSelected = false;
+      checkBoxChecked.value = checkBoxSelected.value[0]
+      // console.log(index);
+      console.log(orderItem);
+    };
+
     function backToSearch() {
       router.push("/returns");
     }
+    onMounted(async () => {
+      await store.dispatch("searchReturnOrder/getOrdersToReturn", payload);
 
+      orderInformation.value =
+        store.state.searchReturnOrder.orderItemsToReturn.orderItems;
+    });
     return {
       orderInformation,
-      backToSearch,
+      checkBoxSelected,
+      checkBoxChecked,
       cardVisible,
+      checkBoxChanged,
+      backToSearch,
       toggleCardVisibility,
     };
   },

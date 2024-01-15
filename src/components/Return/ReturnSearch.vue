@@ -125,13 +125,13 @@
 </template> -->
 <template>
   <div>
-    <p class="font-bold underline md:hidden">Welcome in Wilson</p>
-    <p class="font-bold mt-4 text-2xl">Search for</p>
+    <p class="font-bold underline md:hidden">{{ $t("login.wilson.welcome") }}</p>
+    <p class="font-bold mt-4 text-2xl">{{ $t("return.search.for") }}</p>
     <div class="md:flex items-center space-x-4 pt-2">
       <!-- Input Box 1 -->
       <div class="mb-4 md:w-1/4">
         <label for="orderNumber" class="uppercase text-sm text-gray-600 mb-1"
-          >order number</label
+          >{{ $t("return.order.number") }}</label
         >
         <div class="relative">
           <input
@@ -148,7 +148,7 @@
       </div>
       <div class="mb-4 md:w-1/4">
         <label for="customerNumber" class="uppercase text-sm text-gray-600 mb-1"
-          >customer number</label
+          >{{ $t("return.customer.number") }}</label
         >
         <div class="relative">
           <input
@@ -166,7 +166,7 @@
       </div>
       <div class="mb-4 md:w-1/4">
         <label for="invoiceNumber" class="uppercase text-sm text-gray-600 mb-1"
-          >invoice number</label
+          >{{ $t("return.invoice.number") }}</label
         >
         <div class="relative">
           <input
@@ -186,7 +186,7 @@
         <label
           for="customerReferenceNumber"
           class="uppercase text-sm text-gray-600 mb-1"
-          >customer reference number</label
+          >{{ $t("return.customerReference.number") }}</label
         >
         <div class="relative">
           <input
@@ -197,7 +197,6 @@
             class="w-full px-3 py-2 border border-gray-300"
           />
           <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
-            <!-- Search Icon for Input 1 -->
             <i class="fas fa-search text-gray-500"></i>
           </div>
         </div>
@@ -205,7 +204,7 @@
 
       <div class="mb-4 md:w-1/4">
         <label for="trackingNumber" class="uppercase text-sm text-gray-600 mb-1"
-          >tracking number</label
+          >{{ $t("return.tracking.number") }}</label
         >
         <div class="relative">
           <input
@@ -226,13 +225,13 @@
         class="bg-[#F3E43E] w-full md:w-auto px-12 py-2 text-black font-semibold"
         @click="searchOrder"
       >
-        Search
+      {{ $t("return.search") }}
       </button>
     </div>
     <!-- Dropdown Label and Dropdown -->
     <div class="mb-4 md:flex items-center justify-end space-x-4">
       <label for="orderBy" class="text-sm text-black font-bold mb-1"
-        >Order By:</label
+        >{{ $t("return.order.by") }}:</label
       >
       <div class="relative">
         <select
@@ -249,7 +248,7 @@
         </div> -->
       </div>
     </div>
-    <ReturnDetails  />
+    <ReturnDetails />
   </div>
 </template>
 
@@ -272,18 +271,28 @@ export default {
     const customerReferenceNumber = ref("");
     const trackingNumber = ref("");
     const orderDetailsParams = ref({});
-
+    const globalSearch = computed(() => {
+      return store.state.searchReturnOrder.globalSearch;
+    });
+    let payload;
     function searchOrder() {
-      const payload = {
+      payload = {
         orderId: orderNumber.value,
         customerNumber: customerNumber.value,
         invoiceNumber: invoiceNumber.value,
         customerReferenceNumber: customerReferenceNumber.value,
         orderTrackingNumber: trackingNumber.value,
+        firstName: "",
+        lastName: "",
       };
-      store.dispatch("searchReturnAction",  payload );
-      store.dispatch("storeData", payload);
+      store.dispatch("searchReturnOrder/searchReturnAction", payload);
+      store.dispatch("searchReturnOrder/storeData", payload);
     }
+    onMounted(() => {
+      if (globalSearch !== null) {
+        store.dispatch("searchReturnOrder/searchReturnAction", globalSearch.value);
+      }
+    });
     return {
       searchOrder,
       orderNumber,

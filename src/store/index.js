@@ -1,7 +1,10 @@
 import { createStore } from 'vuex';
 import createPersistedState from 'vuex-persistedstate';
+import SecureLS from 'secure-ls';
 import { searchReturnOrder } from './Modules/searchReturnOrder';
 import { global } from './Modules/global';
+
+const secureLs = new SecureLS({ isCompression: false });
 export default createStore({
   state() {
     return {
@@ -22,7 +25,16 @@ export default createStore({
   mutations: {
     setAccessToken(state, token) {
       state.accessToken = token;
-    }
+    },
+    clearModuleStates(state) {
+      Object.keys(state).forEach((moduleName) => {
+        const moduleState = state[moduleName];
+        console.log(moduleState);
+        Object.keys(moduleState).forEach((key) => {
+          moduleState[key] = null;
+        });
+      });
+    },
   },
   actions: {
   },
@@ -30,7 +42,46 @@ export default createStore({
     searchReturnOrder,
     global
   },
-  plugins: [createPersistedState({
-    paths: ['searchReturnOrder.searchOrders'],
-  })],
+  plugins: [
+    createPersistedState({
+      key: "vuex",
+      paths: [
+        'global.authenticatedUser',
+        'searchReturnOrder.globalSearch'
+        // Add other paths as needed
+      ],
+      // getState: (key,) => {
+      //   // console.log(state);
+      //   // Use secure-ls for decryption
+      //   return secureLs.get(key, { isEncoded: false });
+      // },
+      // setState: (key, state) => {
+      //   // Use secure-ls for encryption
+      //   secureLs.set(key, state, { isEncoded: false });
+      // },
+      // getState: (key) => {
+      //   const encryptedData = localStorage.getItem(key);
+      //   if (!encryptedData) return null;
+
+      //   // Use secure-ls for decryption
+      //   return secureLs.decrypt(encryptedData);
+      // },
+      // setState: (key, state) => {
+      //   // Use secure-ls for encryption
+      //   const encryptedData = secureLs.encrypt(state);
+      //   localStorage.setItem(key, encryptedData);
+      // },
+    }),
+  ],
+
+
 });
+// plugins: [createPersistedState({
+//   key: "searchOrders", paths: ['searchReturnOrder.searchOrders'],
+// })],
+// // plugins: [createPersistedState({
+// //   key: "globalSearch", paths: ['searchReturnOrder.globalSearch'],
+// // })],
+// plugins: [createPersistedState({
+//   key: "authenticatedUser", paths: ['global.authenticatedUser'],
+// })],

@@ -2,5 +2,13 @@
   "loginBtn": "Prihlásiť sa",
   "login.wilson.welcome": "Vitajte vo Wilsonove",
   "login.language": "Jazyk",
-  "login.profile": "Profil"
+  "login.profile": "Profil",
+  "return.search.for": "Hľadať",
+  "return.order.number": "číslo objednávky",
+  "return.customer.number": "zákaznícke číslo",
+  "return.invoice.number": "číslo faktúry",
+  "return.customerReference.number": "referenčné číslo zákazníka",
+  "return.tracking.number": "Sledovacie číslo",
+  "return.search": "Vyhľadávanie",
+  "return.order.by": "Zoradiť podľa"
 }
