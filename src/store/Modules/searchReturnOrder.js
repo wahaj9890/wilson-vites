@@ -10,7 +10,8 @@ export const searchReturnOrder = {
         userPreferredLang: localStorage.getItem('userPreferredLanguage'),
         getCompensation: [],
         setCarriersRec4po: [],
-        group:"asdf",
+        variableRefund: "",
+        acceptedOffer: null,
     },
     mutations: {
         SET_RETURN_ORDER(state, data) {
@@ -43,6 +44,12 @@ export const searchReturnOrder = {
         },
         SET_CARRIER_RECAPO(state, data) {
             state.setCarriersRec4po = data
+        },
+        SET_VARIABLE_REFUND(state, data) {
+            state.variableRefund = data
+        },
+        SET_ACCEPT_OFFER_DISCOUNT(state, data) {
+            state.acceptedOffer = data
         }
     },
     actions: {
@@ -83,11 +90,29 @@ export const searchReturnOrder = {
         },
         async fetchReturnCarriersRec4po({ commit, state }, payload) {
             try {
-                const response = await request.post(`${environment.apiRec4poUrl}/order/cost`, payload );
+                const response = await request.post(`${environment.apiRec4poUrl}/order/cost`, payload);
                 commit('SET_CARRIER_RECAPO', response.data);
             } catch (error) {
                 console.error('Error posting data:', error);
             }
         },
+        async checkVariableRefund({ commit }, payload) {
+            try {
+                const response = await request.get(`${environment.apiUrl}/api/variablerefund/refund-rate`, { params: payload });
+                commit('SET_VARIABLE_REFUND', response.data);
+            } catch (error) {
+                console.error('Error posting data:', error);
+            }
+        },
+        async onUserAcceptedOffer({ commit, state }, payload) {
+            console.log(payload)
+            try {
+                const response = await request.post(`${environment.apiUrl}/api/variablerefund/apply`, { body: payload });
+                commit('SET_ACCEPT_OFFER_DISCOUNT', response.data);
+            } catch (error) {
+                console.error('Error posting data:', error);
+            }
+        },
+
     }
 }

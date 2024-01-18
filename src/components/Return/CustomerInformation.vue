@@ -178,13 +178,20 @@
               <tr class="bg-gray-200 text-black mb-2">
                 <td class="p-2 font-bold">Carrier</td>
                 <td class="p-2 font-bold">
-                  <!-- :disabled="selectedReturnShipment !== true" -->
                   <select
+                    :key="selectedReturnShipment"
+                    :disabled="!selectedReturnShipment"
                     v-model="selectedCarrier"
                     class="w-full p-2 border border-gray-300 rounded cursor-pointer"
                     @change="onCarrierChange"
                   >
-                    
+                    <option
+                      v-for="carrier in group.carriers"
+                      :value="carrier.shortName"
+                      :key="carrier.shortName"
+                    >
+                      {{ carrier.displayName }}
+                    </option>
                   </select>
                 </td>
               </tr>
@@ -214,11 +221,12 @@
         </transition>
       </div>
     </div>
+    <CommonDialog v-if="variableRefundDialog" />
   </div>
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted, watch } from "vue";
+import { ref, reactive, computed, onMounted, watch, nextTick } from "vue";
 import {
   applicationRoles,
   applicationRolesString,
@@ -229,8 +237,13 @@ import {
   rec4poCarrierListToMap,
   warehouseMapping,
 } from "../../utils/warehouseAndCarriers";
+import { eventBus } from "../../utils/eventBus";
+import CommonDialog from "../common/CommonDialog.vue";
 export default {
   name: "CustomerInformation",
+  components: {
+    CommonDialog,
+  },
   setup(props) {
     const store = useStore();
     const route = useRoute();
@@ -239,17 +252,32 @@ export default {
     const showCompensation = ref(true);
     const setConsequentialDamage = ref("");
     const selectedReturnReason = ref("");
-    const selectedReturnShipment = ref("");
+    const selectedReturnShipment = ref(false);
     const selectedCompensation = ref("");
     const selectedCarrier = ref("");
+    const currencyCode = ref("");
     const customerBankDetailsDisabled = ref(true);
-    const isCashOnDelivery = ref(true);
+    const isCashOnDelivery = ref(false);
     const isRec4poFetched = ref(false);
+    const maxDiscountReject = ref(null);
     const pickupCarrierSelected = ref(false);
+    const specificReasonSelected = ref(false);
+    const variableRefundDialog = ref(false);
+    const valueInFigures = ref("");
+    const valueInPercentage = ref("");
+    const appRoleId = ref("");
+    const isCheckBoxChecked = ref(false);
+    const customerBankDetailsFormGroupDisabled = ref(false);
     var pickupMinDate = ref("");
     const expiryDate = ref("");
+    const selectedCheckBox = ref("");
     const returnShipmentFee = ref(0);
+    const wayOfDistribution = ref("");
+    const variableRefund = ref("");
     const hasReturnShipmentFeeRec4po = ref(false);
+    const isDiscountRejected = computed(
+      () => store.state.global.discountReject
+    );
     const carriersList = ref([
       {
         companyName: "",
@@ -295,6 +323,7 @@ export default {
     const customerDetails = computed(
       () => store.state.searchReturnOrder.getOrderDetails.customer || {}
     );
+    const dere = computed(() => store.state.global.discountReject);
     const orderItemsToReturnDetails = computed(
       () => store.state.searchReturnOrder.orderItemsToReturn
     );
@@ -302,11 +331,10 @@ export default {
       () => store.state.searchReturnOrder.getCompensation || []
     );
     let orders = ref([]);
-    var group = ref([]);
+    const group = ref([]);
     const formatValue = (value) => value || "-";
 
     // const orderItemId = ref("");
-    const wayOfDistribution = ref(null);
     const returnOrderId = route.query.orderId;
 
     const returnsFormArray = ref([]);
@@ -314,12 +342,13 @@ export default {
     const pickupCarriersList = new Set();
 
     const disableShipmentNeeded = (group) => {
-      var appRoleId = currentUserValue?.value?.role?.id;
+      appRoleId.value = currentUserValue?.value?.role?.id;
 
       if (
-        appRoleId === applicationRoles.WarehouseStaffHoppegarten.toString() ||
-        appRoleId === applicationRoles.WarehouseStaffKaLi.toString() ||
-        appRoleId === applicationRoles.WarehouseStaffSK.toString()
+        appRoleId.value ===
+          applicationRoles.WarehouseStaffHoppegarten.toString() ||
+        appRoleId.value === applicationRoles.WarehouseStaffKaLi.toString() ||
+        appRoleId.value === applicationRoles.WarehouseStaffSK.toString()
       ) {
         group.shipmentNeeded.value = false;
       }
@@ -390,8 +419,10 @@ export default {
       store.dispatch("searchReturnOrder/fetchCompensation", payload);
     };
     const onShipmentChange = () => {
+      const formGroup = returnsFormArray.value.at(selectedCheckBox);
       if (selectedReturnShipment.value === "true") {
-        getReturnCarriersFromRec4po(group);
+        formGroup.isRec4poFetched = false;
+        getReturnCarriersFromRec4po(formGroup);
       }
       if (
         selectedReturnShipment.value === "true" ||
@@ -402,7 +433,8 @@ export default {
       setCarrierPickupDate();
     };
 
-    const getReturnCarriersFromRec4po = (group) => {
+    const getReturnCarriersFromRec4po = (groups) => {
+      console.log(groups);
       const item = group.value.packages;
       const customerCountry =
         orderItemsToReturnDetails.value.deliveryAddress.countryName;
@@ -417,9 +449,9 @@ export default {
         serviceName: "return",
         id: 1,
       };
+      console.log(group.value);
       let carriers = group.value.carriers;
       let currentItem = group;
-
       if (!currentItem.isRec4poFetched) {
         const wareHouseIdForSK = 3;
         const wareHouseForWilson =
@@ -504,7 +536,6 @@ export default {
                   };
                 }
               );
-
               if (countryGroupCH_GB.includes(userCountry)) {
                 carriers.unshift(carrierDefault);
               } else if (countryGroupCEE6.includes(userCountry)) {
@@ -513,7 +544,6 @@ export default {
               carriers.push(...Object.values(rec4poCarriers));
 
               carriersList.value = carriers;
-
               carriers.sort(
                 (a, b) =>
                   parseFloat(a.shipmentCost) - parseFloat(b.shipmentCost)
@@ -527,16 +557,15 @@ export default {
 
     const setShipmentAndCarrierValidity = (shipmentNeeded, group) => {
       if (shipmentNeeded === "false" || shipmentNeeded == null) {
-        console.log(group.value.carriers);
+        // console.log(group.value.carriers);
         group.value.carriers = null;
-        console.log(group.value.carriers);
+        // console.log(group.value.carriers);
       } else {
         // carrier required
         // formGroup.controls.carrier.setValidators(Validators.required);
       }
     };
     const setCarrierPickupDate = () => {
-      console.log(group);
       let returns = [group.value];
       if (returns) {
         for (let returnObj of returns) {
@@ -548,7 +577,6 @@ export default {
           }
         }
       }
-      console.log(pickupCarrierSelected);
     };
     const onCarrierChange = () => {
       const selectedCarrier = selectedCarrier.value;
@@ -566,6 +594,27 @@ export default {
         setCarrierPickupDate();
       }
     };
+    const handleCheckBoxChange = ({ value, index, orderItem, checked }) => {
+      selectedCheckBox.value = index;
+      specificReasonSelected.value = value;
+      isCheckBoxChecked.value = checked;
+      let returns = group.value;
+
+      if (isCashOnDelivery && !customerBankDetailsFormGroupDisabled) {
+        if (returns.returnReasonId != null && returns.returnReasonId != 9) {
+          specificReasonSelected.value = true;
+          return;
+        }
+
+        if (!specificReasonSelected) {
+          // this.clearCustomerBankDetailsValidators();
+        } else {
+          // this.enableCustomerBankDetailsValidatorsInternal();
+        }
+      }
+      checkForVariableRefund(returns);
+    };
+
     const buildForm = async () => {
       const payload = {
         referenceNumber: returnOrderId,
@@ -578,7 +627,6 @@ export default {
       if (orderItemsToReturnDetails?.value) {
         wayOfDistribution.value =
           orderItemsToReturnDetails?.value?.wayOfDistribution;
-
         orderItemsToReturnDetails?.value?.orderItems?.forEach((item) => {
           const unitPriceGrossLocalCurrency = 0;
           const fallbackValue = 1;
@@ -621,7 +669,6 @@ export default {
           if (returnOrderId != null) {
             group.returnUserDescription = true;
           }
-
           if (item.isKittingMaster || item.isSetMaster) {
             // Assuming this.returnsFormArray is a reactive array
             returnsFormArray.value.push({ ...group, disabled: true });
@@ -629,6 +676,7 @@ export default {
             returnsFormArray.value.push(group);
           }
           disableShipmentNeeded(group);
+          returnsFormArray.value.push(group);
 
           item.carriers
             .filter((x) => x.isPickup)
@@ -639,8 +687,96 @@ export default {
       dataSourceOrder.value = returnsFormArray.value;
 
       // if (this.customerBankDetails !== null) {
-      //   this.customerBankDetailsFormGroup.disabled = true;
+      //   this.customerBankDetailsFormGroupDisabled = true;
       // }
+    };
+    const checkForVariableRefund = (returns) => {
+      currencyCode.value =
+        store.state.searchReturnOrder.getOrderDetails.orders[0].currency;
+      const countryCode =
+        orderItemsToReturnDetails.value.deliveryAddress.countryName;
+      const wayOfDistributionReturn = wayOfDistribution.value;
+      const sku = returns.formattedArticleNumber;
+      const orderItemId = returns.orderItemId;
+      const item =
+        store.state.searchReturnOrder.getOrderDetails.orders[0].orderItems.filter(
+          (sItem) => sItem.orderItemId === orderItemId
+        );
+      const unitPrice = item[0].unitPriceGrossLocalCurrency;
+      const orderItemQuantity = item[0].quantity;
+      let payload = {
+        sku,
+        orderItemId,
+        countryCode,
+        wayOfDistributionReturn,
+      };
+      store
+        .dispatch("searchReturnOrder/checkVariableRefund", payload)
+        .then(() => {
+          variableRefund.value = store.state.searchReturnOrder.variableRefund;
+          if (
+            variableRefund.value.isVariabeRefundApplied === false &&
+            variableRefund.value.value !== 0
+          ) {
+            const percentage = variableRefund.value.value;
+            const calculateOfferPrice =
+              (unitPrice * percentage) / 100 / orderItemQuantity;
+            valueInFigures.value = Math.trunc(calculateOfferPrice);
+            valueInPercentage.value = percentage;
+            if (appRoleId.value === "1" && isCheckBoxChecked.value) {
+              openVariableRefundDialog(orderItemId, returns);
+            }
+          }
+        });
+    };
+    const openVariableRefundDialog = (orderItemId, returns) => {
+      const refundValue = valueInFigures.value;
+      const comment = "customer accepted variable refund";
+      const commentOnReject = "customer rejected variable refund";
+      variableRefundDialog.value = true;
+      store.watch(
+        () => store.state.global.discountReject,
+        (newData) => {
+          isDiscountRejected.value = newData;
+          if (isDiscountRejected.value === true) {
+            const formGroupItems = returnsFormArray.value;
+            const selectedItemIndex = formGroupItems.findIndex((item) => {
+              return item.value.articleNumber === returns.articleNumber;
+            });
+            const formGroup = returnsFormArray.value.at(selectedItemIndex);
+            const val =
+              formGroup.consequentialDamage === "1" ? "true" : "false";
+            const coolingOff = String(
+              !store.state.searchReturnOrder.getOrderDetails.orders[0]
+                .isReturnPeriodExpired
+            );
+            setReturnCompensation(appRoleId.value, val, coolingOff);
+            group.value.returnUserDescription = comment;
+            group.value.compensationId = 4;
+
+            let payload = {
+              orderItemId,
+              refundAccepted: true,
+              refund: refundValue,
+              description: commentOnReject,
+            };
+            store.dispatch("searchReturnOrder/onUserAcceptedOffer", payload);
+            variableRefundDialog.value = false;
+          } else if (isDiscountRejected.value === false) {
+            let payload = {
+              orderItemId,
+              refundAccepted: false,
+              refund: refundValue,
+              description: commentOnReject,
+            };
+            store.dispatch("searchReturnOrder/onUserAcceptedOffer", payload);
+            variableRefundDialog.value = false;
+          } else {
+            isCheckBoxChecked.value = false;
+          }
+        }
+      );
+      // debugger;
     };
     onMounted(async () => {
       let tomorrow = new Date();
@@ -677,6 +813,10 @@ export default {
       //   );
       // }
       await store.dispatch("searchReturnOrder/getOrderDetailsAction");
+      eventBus.on("specificReasonSelectedChanged", handleCheckBoxChange);
+      eventBus.on("rejectRefunds", (data) => {
+        maxDiscountReject.value = data.rejected;
+      });
       customerDetails.value =
         store.state.searchReturnOrder.getOrderDetails.customer;
       orders.value =
@@ -695,20 +835,36 @@ export default {
       setConsequentialDamage,
       orders,
       currentUserValue,
+      dere,
       customerBankDetailsDisabled,
       isCashOnDelivery,
       orderItemsToReturnDetails,
       compensationsDetails,
       selectedCompensation,
+      selectedCheckBox,
       selectedReturnShipment,
       hasReturnShipmentFeeRec4po,
       pickupCarrierSelected,
+      specificReasonSelected,
+      valueInPercentage,
+      isCheckBoxChecked,
+      currencyCode,
+      isDiscountRejected,
+      isRec4poFetched,
+      returnsFormArray,
       // returnFormGroup,
       carriersList,
+      variableRefund,
       pickupMinDate,
       expiryDate,
+      group,
       returnShipmentFee,
       selectedCarrier,
+      wayOfDistribution,
+      variableRefundDialog,
+      customerBankDetailsFormGroupDisabled,
+      valueInFigures,
+      maxDiscountReject,
       formatValue,
       toggleCustomerInformation,
       toggleCompensation,
@@ -719,6 +875,9 @@ export default {
       onShipmentChange,
       setCarrierPickupDate,
       onCarrierChange,
+      handleCheckBoxChange,
+      checkForVariableRefund,
+      openVariableRefundDialog,
     };
   },
 };

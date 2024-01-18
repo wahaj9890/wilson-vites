@@ -5,6 +5,7 @@ export const global = {
     namespaced: true,
     state: {
         authenticatedUser: false,
+        discountReject: "",
         // orderItemsToReturn: [],
         // getOrderDetails: [],
     },
@@ -21,10 +22,12 @@ export const global = {
 
             }
         },
-        
+        SET_DISCOUNT_REJECT(state, payload) {
+            state.discountReject = payload;
+        },
     },
     actions: {
-        
+
         async fetchRegistrationReasons({ commit }, { payload, keys }) {
             try {
                 const response = await request.get(`${environment.apiUrl}/api/returns/get-registration-reasons`, { params: payload });

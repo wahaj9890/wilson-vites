@@ -49,7 +49,7 @@
                   type="checkbox"
                   class="form-checkbox h-5 w-5 text-blue-500"
                   :disabled="orderItem.isKittingMaster || orderItem.isSetMaster"
-                  @change="checkBoxChanged(index,$event,orderItem)"
+                  @change="checkBoxChanged(index, $event, orderItem)"
                 />
                 <p class="ml-2 truncate">{{ orderItem.articleDescription }}</p>
               </div>
@@ -87,7 +87,7 @@
 import { ref, onMounted, computed, reactive } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
-
+import { eventBus } from "../../utils/eventBus";
 export default {
   name: "OrderInformation",
   setup() {
@@ -95,6 +95,7 @@ export default {
     const store = useStore();
     const cardVisible = ref(true);
     const checkBoxChecked = ref(false);
+    const specificReasonSelected = ref(false);
     const route = useRoute();
     const returnOrderId = route.query.orderId;
     const orderInformation = computed(
@@ -110,11 +111,14 @@ export default {
       cardVisible.value = !cardVisible.value;
     };
 
-    const checkBoxChanged = (index,event,orderItem) => {
-      let specificReasonSelected = false;
-      checkBoxChecked.value = checkBoxSelected.value[0]
-      // console.log(index);
-      console.log(orderItem);
+    const checkBoxChanged = (index, event, orderItem) => {
+      checkBoxChecked.value = checkBoxSelected.value[index]
+      eventBus.emit("specificReasonSelectedChanged", {
+        value: specificReasonSelected.value,
+        checked: checkBoxChecked.value,
+        index,
+        orderItem,
+      });
     };
 
     function backToSearch() {
@@ -131,6 +135,7 @@ export default {
       checkBoxSelected,
       checkBoxChecked,
       cardVisible,
+      specificReasonSelected,
       checkBoxChanged,
       backToSearch,
       toggleCardVisibility,

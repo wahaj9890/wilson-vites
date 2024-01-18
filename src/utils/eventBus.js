@@ -1,3 +1,4 @@
-import { ref } from 'vue';
+// eventBus.js
+import mitt from 'mitt';
 
-export const eventBus = ref({});
+export const eventBus = mitt();
