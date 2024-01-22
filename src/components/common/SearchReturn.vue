@@ -1,13 +1,10 @@
 <template>
   <div class="grid grid-cols-12 gap-4 items-center">
-    <!-- Title -->
     <div class="col-span-12 mt-4">
       <p class="text-lg font-semibold">Search Return Delivery Number</p>
     </div>
 
-    <!-- Search Bar -->
     <div class="col-span-12 flex items-center space-x-4">
-      <!-- Search Input -->
       <div class="relative flex-grow">
         <input
           type="text"

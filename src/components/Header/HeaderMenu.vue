@@ -1,9 +1,7 @@
 <template>
   <header class="headerBgColor p-4 flex justify-between items-center">
-    <!-- Left side with hamburger icon and title -->
     <div class="flex items-center">
       <button @click="toggleSidebar" class="text-white mr-4">
-        <!-- <i class="fas fa-bars text-2xl w-5 h-6"></i> -->
         <svg
           width="32"
           height="26"
@@ -21,8 +19,6 @@
         >BBG</span
       >
     </div>
-
-    <!-- Right side with welcome message -->
     <div class="hidden md:block">
       <p class="text-white">{{ $t("login.wilson.welcome") }}</p>
     </div>

@@ -4,6 +4,8 @@ import SecureLS from 'secure-ls';
 import { searchReturnOrder } from './Modules/searchReturnOrder';
 import { global } from './Modules/global';
 
+import { notifications } from './Modules/notifications'
+
 const secureLs = new SecureLS({ isCompression: false });
 export default createStore({
   state() {
@@ -40,7 +42,8 @@ export default createStore({
   },
   modules: {
     searchReturnOrder,
-    global
+    global,
+    notifications
   },
   plugins: [
     createPersistedState({

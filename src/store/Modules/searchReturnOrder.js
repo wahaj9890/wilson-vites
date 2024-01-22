@@ -12,6 +12,7 @@ export const searchReturnOrder = {
         setCarriersRec4po: [],
         variableRefund: "",
         acceptedOffer: null,
+        createReturnResponse: ""
     },
     mutations: {
         SET_RETURN_ORDER(state, data) {
@@ -50,6 +51,10 @@ export const searchReturnOrder = {
         },
         SET_ACCEPT_OFFER_DISCOUNT(state, data) {
             state.acceptedOffer = data
+        },
+        SET_CREATE_RETURN(state, data) {
+            console.log(data)
+            state.createReturnResponse = data
         }
     },
     actions: {
@@ -105,10 +110,18 @@ export const searchReturnOrder = {
             }
         },
         async onUserAcceptedOffer({ commit, state }, payload) {
-            console.log(payload)
             try {
                 const response = await request.post(`${environment.apiUrl}/api/variablerefund/apply`, { body: payload });
                 commit('SET_ACCEPT_OFFER_DISCOUNT', response.data);
+            } catch (error) {
+                console.error('Error posting data:', error);
+            }
+        },
+        async createReturn({ commit, state }, payload) {
+            console.log(payload)
+            try {
+                const response = await request.post(`${environment.apiUrl}/api/returns/create-returns`, { body: payload });
+                commit('SET_CREATE_RETURN', response.data);
             } catch (error) {
                 console.error('Error posting data:', error);
             }

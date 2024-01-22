@@ -132,6 +132,7 @@
                   <select
                     v-model="selectedCompensation"
                     class="w-full p-2 border border-gray-300 rounded cursor-pointer"
+                    @change="onCompensationChange"
                   >
                     <option value=""></option>
                     <option
@@ -178,8 +179,8 @@
               <tr class="bg-gray-200 text-black mb-2">
                 <td class="p-2 font-bold">Carrier</td>
                 <td class="p-2 font-bold">
+                  <!-- :key="selectedReturnShipment" -->
                   <select
-                    :key="selectedReturnShipment"
                     :disabled="!selectedReturnShipment"
                     v-model="selectedCarrier"
                     class="w-full p-2 border border-gray-300 rounded cursor-pointer"
@@ -206,12 +207,18 @@
                   </select>
                 </td>
               </tr>
-
+              <button
+                class="bg-green-500 font-bold text-white py-2 px-4 my-2 rounded"
+                @click="success"
+              >
+                Show success
+              </button>
               <tr class="bg-gray-200 text-black mb-2">
                 <td class="p-2 font-bold">Return User Description</td>
                 <td class="p-2 font-bold">
                   <input
                     type="text"
+                    v-model="userDescription"
                     class="w-full p-2 border border-gray-300 rounded"
                   />
                 </td>
@@ -221,6 +228,7 @@
         </transition>
       </div>
     </div>
+    <button @click="submitReturn">Return</button>
     <CommonDialog v-if="variableRefundDialog" />
   </div>
 </template>
@@ -239,6 +247,7 @@ import {
 } from "../../utils/warehouseAndCarriers";
 import { eventBus } from "../../utils/eventBus";
 import CommonDialog from "../common/CommonDialog.vue";
+import { useToast } from "vue-toastification";
 export default {
   name: "CustomerInformation",
   components: {
@@ -247,10 +256,13 @@ export default {
   setup(props) {
     const store = useStore();
     const route = useRoute();
+    const toast = useToast();
+    const success = () => toast.success("You did it! 🎉");
 
     const showCustomerInformation = ref(true);
     const showCompensation = ref(true);
     const setConsequentialDamage = ref("");
+    const userDescription = ref("");
     const selectedReturnReason = ref("");
     const selectedReturnShipment = ref(false);
     const selectedCompensation = ref("");
@@ -263,6 +275,7 @@ export default {
     const pickupCarrierSelected = ref(false);
     const specificReasonSelected = ref(false);
     const variableRefundDialog = ref(false);
+    const isReturnShipmentFeeValidated = ref(false);
     const valueInFigures = ref("");
     const valueInPercentage = ref("");
     const appRoleId = ref("");
@@ -274,6 +287,7 @@ export default {
     const returnShipmentFee = ref(0);
     const wayOfDistribution = ref("");
     const variableRefund = ref("");
+    const selection = ref([]);
     const hasReturnShipmentFeeRec4po = ref(false);
     const isDiscountRejected = computed(
       () => store.state.global.discountReject
@@ -288,7 +302,7 @@ export default {
       },
     ]);
     // const returnFormGroup = ref({
-    //   orderNumber: props.order.orderId,
+    //   // orderNumber: props.order.orderId,
     //   alternateEmailTelephone: {
     //     emailAddress: null,
     //     telephoneNumber: null,
@@ -303,7 +317,7 @@ export default {
     //     SWIFT_BIC: props.customerBankDetails?.swift_BIC ?? null,
     //     BankName: props.customerBankDetails?.bankName ?? null,
     //     BankCode: props.customerBankDetails?.bankCode ?? null,
-    //     OrderId: props.order.id,
+    //     // OrderId: props.order.id,
     //     CustomerId: props.order.customerId,
     //     Currency: props.order.currency,
     //   },
@@ -361,7 +375,9 @@ export default {
       showCustomerInformation.value = !showCustomerInformation.value;
     };
     const onConsequentialDamageChanged = (key) => {
-      val = key === "1" ? "true" : "false";
+      group.value.consequentialDamage = setConsequentialDamage.value;
+      const formGroup = returnsFormArray.value.at(isCheckBoxChecked.value);
+      let val = formGroup.value.consequentialDamage == "1" ? "true" : "false";
       const coolingOffString = orders.value.toString();
       setReturnRegistrationReason(val, coolingOffString);
     };
@@ -374,12 +390,22 @@ export default {
       );
     };
 
+    const onCompensationChange = () => {
+      group.value.compensationId = selectedCompensation.value;
+    };
+
     const onReturnRegistrationReasonChanged = (event) => {
-      if (!customerBankDetailsDisabled && isCashOnDelivery) {
-        // this.enableCustomerBankDetailsValidation(event.source.value);
+      group.value.returnReasonId = selectedReturnReason.value;
+      const formGroup = returnsFormArray.value.at(isCheckBoxChecked);
+      if (
+        event.target.value !== undefined &&
+        !customerBankDetailsDisabled &&
+        isCashOnDelivery
+      ) {
+        enableCustomerBankDetailsValidation(event.target.value);
       }
 
-      if (selectedReturnReason.value == 6) {
+      if (event.target.value !== undefined && selectedReturnReason.value == 6) {
         // formGroup.controls.articleReceivedSKU.setValidators(
         //   Validators.required
         // );
@@ -387,27 +413,54 @@ export default {
         // formGroup.controls.articleReceivedSKU.setValue(null);
         // formGroup.controls.articleReceivedSKU.clearValidators();
       }
-
-      if (selectedReturnReason.value == 9) {
-        if (
-          currentUserValue?.value?.role?.id ===
-          applicationRoles.CSAgent.toString()
-        ) {
-          // formGroup.controls.shipmentNeeded.setValue(false);
+      if (event.target.value !== undefined && selectedReturnReason.value == 9) {
+        if (appRoleId.value === applicationRoles.CSAgent.toString()) {
+          formGroup.value.shipmentNeeded = false;
+          // we need to disable
           // formGroup.controls.shipmentNeeded.disable();
-          // this.setShipmentAndCarrierValidity(false, formGroup);
+          setShipmentAndCarrierValidity(false, formGroup);
         }
       } else {
-        // formGroup.controls.shipmentNeeded.setValue(false);
+        formGroup.value.shipmentNeeded = false;
+        // we need to enable
         // formGroup.controls.shipmentNeeded.enable();
-        // this.setShipmentAndCarrierValidity(null, formGroup);
+        setShipmentAndCarrierValidity(null, formGroup);
       }
 
       // formGroup.controls.articleReceivedSKU.updateValueAndValidity();
       // formGroup.controls.compensationId.reset();
+      let val = formGroup.value.consequentialDamage == "1" ? "true" : "false";
+
       let coolingOff =
         !orderItemsToReturnDetails?.value?.isReturnPeriodExpired?.toString();
-      setReturnCompensation(currentUserValue?.value?.role?.id, val, coolingOff);
+      setReturnCompensation(appRoleId.value, val, coolingOff);
+    };
+
+    const enableCustomerBankDetailsValidation = (returnReason) => {
+      var reasonFound = false;
+
+      if (returnReason != 9) {
+        // this.enableCustomerBankDetailsValidatorsInternal();
+        reasonFound = true;
+      }
+      if (reasonFound == false) {
+        if (this.selection.selected.length > 0) {
+          let returns = this.selection.selected.map((x) => {
+            return x.value;
+          });
+
+          returns.forEach((element) => {
+            if (element.returnReasonId != 9) {
+              reasonFound = true;
+              this.enableCustomerBankDetailsValidatorsInternal();
+              return;
+            }
+          });
+        }
+      }
+      if (reasonFound == false) {
+        this.clearCustomerBankDetailsValidators();
+      }
     };
 
     const setReturnCompensation = (
@@ -417,8 +470,12 @@ export default {
     ) => {
       let payload = { appRoleId, consequentialDamage, coolingOff };
       store.dispatch("searchReturnOrder/fetchCompensation", payload);
+      toast.success("You did it! 🎉")
     };
     const onShipmentChange = () => {
+      group.value.shipmentNeeded = Boolean(selectedReturnShipment.value);
+      console.log(group.value.shipmentNeeded);
+      console.log(typeof group.value.shipmentNeeded);
       const formGroup = returnsFormArray.value.at(selectedCheckBox);
       if (selectedReturnShipment.value === "true") {
         formGroup.isRec4poFetched = false;
@@ -428,13 +485,12 @@ export default {
         selectedReturnShipment.value === "true" ||
         selectedReturnShipment.value === "false"
       ) {
-        setShipmentAndCarrierValidity(selectedReturnShipment.value, group);
+        setShipmentAndCarrierValidity(selectedReturnShipment.value, formGroup);
       }
       setCarrierPickupDate();
     };
 
-    const getReturnCarriersFromRec4po = (groups) => {
-      console.log(groups);
+    const getReturnCarriersFromRec4po = (group) => {
       const item = group.value.packages;
       const customerCountry =
         orderItemsToReturnDetails.value.deliveryAddress.countryName;
@@ -449,7 +505,6 @@ export default {
         serviceName: "return",
         id: 1,
       };
-      console.log(group.value);
       let carriers = group.value.carriers;
       let currentItem = group;
       if (!currentItem.isRec4poFetched) {
@@ -457,7 +512,7 @@ export default {
         const wareHouseForWilson =
           destinationWarehouse === 2 ? wareHouseIdForSK : destinationWarehouse;
 
-        group.wareHouseId = wareHouseForWilson;
+        group.value.wareHouseId = wareHouseForWilson;
         const payload = {
           destinationCountry: customerCountry,
           postalCode:
@@ -556,9 +611,11 @@ export default {
     };
 
     const setShipmentAndCarrierValidity = (shipmentNeeded, group) => {
+      // need to work on this
       if (shipmentNeeded === "false" || shipmentNeeded == null) {
+        selectedReturnShipment.value = false;
         // console.log(group.value.carriers);
-        group.value.carriers = null;
+        // group.value.carriers = null;
         // console.log(group.value.carriers);
       } else {
         // carrier required
@@ -579,9 +636,10 @@ export default {
       }
     };
     const onCarrierChange = () => {
-      const selectedCarrier = selectedCarrier.value;
-      const selectedCarrierObj = carriersList.find(
-        (carrier) => carrier.shortName === selectedCarrier
+      const getSelectedCarrier = selectedCarrier.value;
+      group.value.carrier = getSelectedCarrier;
+      const selectedCarrierObj = carriersList.value.find(
+        (carrier) => carrier.shortName === getSelectedCarrier
       );
       if (isRec4poFetched) {
         returnShipmentFee.value = selectedCarrierObj.shipmentCost;
@@ -590,7 +648,7 @@ export default {
         returnShipmentFee.value = 5;
       }
 
-      if (selectedCarrier.value !== undefined) {
+      if (getSelectedCarrier.value !== undefined) {
         setCarrierPickupDate();
       }
     };
@@ -776,7 +834,166 @@ export default {
           }
         }
       );
-      // debugger;
+    };
+    const validateReturnShipmentFee = () => {
+      const orderItems =
+        store.state.searchReturnOrder.getOrderDetails.orders[0].orderItems;
+      const selectedItems = [group.value];
+      const articleNumberToPriceMap = {};
+      orderItems.forEach((item) => {
+        articleNumberToPriceMap[item.articleNumber] =
+          item.unitPriceGrossLocalCurrency;
+      });
+
+      selectedItems.forEach((item) => {
+        const unitPriceGrossLocalCurrency =
+          articleNumberToPriceMap[item.articleNumber];
+
+        if (unitPriceGrossLocalCurrency !== undefined) {
+          item.unitPriceGrossLocalCurrency = unitPriceGrossLocalCurrency;
+          item.unitPrice = unitPriceGrossLocalCurrency / item.quantity;
+        }
+      });
+      const validCompensationId = [1];
+      const validateCompensationId = selectedItems.some((i) =>
+        validCompensationId.includes(i.compensationId)
+      );
+      const validReturnReasons = [2, 4, 10];
+      const isReturnReasonValid = selectedItems.some((i) =>
+        validReturnReasons.includes(i.returnReasonId)
+      );
+      if (isReturnReasonValid && validateCompensationId) {
+        const priceLimitToCharge = 50;
+        function shouldChargeForReturn(selectedItems) {
+          const itemsOver50 = selectedItems.filter(
+            (item) => item.unitPrice >= priceLimitToCharge
+          );
+          if (itemsOver50.length === 0) {
+            return false;
+          } else if (itemsOver50.length > 1) {
+            return false;
+          } else {
+            return true;
+          }
+        }
+        function getItemWithPriceOver50(selectedItems) {
+          const itemsOver50 = selectedItems.filter(
+            (item) => item.value.unitPrice >= priceLimitToCharge
+          );
+
+          if (itemsOver50.length === 1) {
+            // Creating an object with the details which have price more than 50
+            const itemWithShipmentFee = {
+              formattedArticleNumber:
+                itemsOver50[0].value.formattedArticleNumber,
+              articleNumber: itemsOver50[0].value.articleNumber,
+            };
+
+            return itemWithShipmentFee;
+          }
+
+          return null; // No item over 50 or more than 1 item over 50
+        }
+        const itemWithShipmentFee = getItemWithPriceOver50(selectedItems);
+        const shouldCharge = shouldChargeForReturn(selectedItems);
+        if (shouldCharge) {
+          this.getReturnShipmentFee(
+            itemWithShipmentFee.formattedArticleNumber,
+            itemWithShipmentFee.articleNumber,
+            this.wayOfDistribution,
+            this.address.countryName // "FR"
+          );
+        } else {
+          // this.showSpinner = false;
+          isReturnShipmentFeeValidated.value = true;
+        }
+      } else {
+        // this.showSpinner = false;
+        isReturnShipmentFeeValidated.value = true;
+      }
+    };
+    const submitReturn = () => {
+      group.value.returnUserDescription = userDescription.value;
+      console.log(typeof group.value);
+      validateReturnShipmentFee();
+      let returns = group.value;
+      let coolingOffValue = String(
+        !store.state.searchReturnOrder.getOrderDetails.orders[0]
+          .isReturnPeriodExpired
+      );
+      debugger;
+      console.log(returns);
+      if (returns != null && Object.keys(returns).length > 0) {
+        returns.consequentialDamage =
+          returns.consequentialDamage == "1" ? "true" : "false";
+      }
+
+      // this.pickupDateGroup.controls.pickupWishDate.value;
+      const alternativeAddress = JSON.parse(
+        sessionStorage.getItem("additionalAddress")
+      );
+      let alternateAddressFilledData;
+      let returnObj;
+      if (alternativeAddress) {
+        alternateAddressFilledData = {
+          firstname: alternativeAddress.firstname || "",
+          lastname: alternativeAddress.lastname || null,
+          additionalDetails: alternativeAddress.additionalDetails || null,
+          houseNumber: alternativeAddress.houseNumber || null,
+          street: alternativeAddress.street || null,
+          postalCode: alternativeAddress.postalCode || null,
+          mobilePhoneNumber: alternativeAddress.mobilePhoneNumber || null,
+          city: alternativeAddress.city || null,
+          countryCode: alternativeAddress.countryCode || null,
+        };
+        returnObj = {
+          orderNumber: this.returnFormGroup.controls.orderNumber.value,
+          alternateAddress: alternateAddressFilledData,
+          alternateEmailTelephone: this.alternateEmailTelephone.value,
+          returnOrders: [returns],
+          appRoleId: this.appRoleId,
+          customerBankDetailsDto: !this.isCashOnDelivery
+            ? null
+            : this.customerBankDetailsFormGroup.value,
+          coolingOff: coolingOffValue,
+          pickupWishDate: selectedPickupDate
+            ? new Date(
+                Date.UTC(
+                  selectedPickupDate.getFullYear(),
+                  selectedPickupDate.getMonth(),
+                  selectedPickupDate.getDate()
+                )
+              )
+                .toISOString()
+                .slice(0, 10)
+            : null,
+        };
+      } else {
+        returnObj = {
+          orderNumber: returnOrderId,
+          // alternateEmailTelephone: alternateEmailTelephone
+          // .value
+          returnOrders: [returns],
+          appRoleId: appRoleId.value,
+          customerBankDetailsDto: !isCashOnDelivery.value ? null : null, //this.customerBankDetailsFormGroup.value,
+          coolingOff: coolingOffValue,
+          pickupWishDate: null,
+          // pickupWishDate: selectedPickupDate
+          //   ? new Date(
+          //       Date.UTC(
+          //         selectedPickupDate.getFullYear(),
+          //         selectedPickupDate.getMonth(),
+          //         selectedPickupDate.getDate()
+          //       )
+          //     )
+          //       .toISOString()
+          //       .slice(0, 10)
+          //   : null,
+        };
+      }
+      store
+        .dispatch("searchReturnOrder/createReturn", returnObj)
+        .then(() => {});
     };
     onMounted(async () => {
       let tomorrow = new Date();
@@ -839,12 +1056,14 @@ export default {
       customerBankDetailsDisabled,
       isCashOnDelivery,
       orderItemsToReturnDetails,
+      userDescription,
       compensationsDetails,
       selectedCompensation,
       selectedCheckBox,
       selectedReturnShipment,
       hasReturnShipmentFeeRec4po,
       pickupCarrierSelected,
+      isReturnShipmentFeeValidated,
       specificReasonSelected,
       valueInPercentage,
       isCheckBoxChecked,
@@ -855,6 +1074,7 @@ export default {
       // returnFormGroup,
       carriersList,
       variableRefund,
+      selection,
       pickupMinDate,
       expiryDate,
       group,
@@ -875,9 +1095,13 @@ export default {
       onShipmentChange,
       setCarrierPickupDate,
       onCarrierChange,
+      success,
       handleCheckBoxChange,
       checkForVariableRefund,
       openVariableRefundDialog,
+      onCompensationChange,
+      validateReturnShipmentFee,
+      submitReturn,
     };
   },
 };

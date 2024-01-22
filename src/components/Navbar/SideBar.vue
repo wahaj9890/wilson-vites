@@ -4,8 +4,8 @@
       v-if="isOpen"
       class="fixed top-0 z-10 left-0 h-full bg-[#66CEE8] text-white p-4"
       :class="{
-        'w-48 transition-all duration-1000 ease-in-out ': isOpen,
-        'w-0': !isOpen,
+        'w-48 transition-all duration-1000 ease-in-out h-screen': isOpen,
+        'w-0 h-0': !isOpen,
       }"
     >
       <div class="cursor-pointer absolute top-4 right-4" @click="closeSidebar">
@@ -13,7 +13,7 @@
       </div>
 
       <div class="mt-12">
-        <div v-for="(menu, key) in sidemenu">
+        <div v-for="(menu, key) in sidemenu" :key="key">
           <router-link
             :to="{ name: menu.routerLink.name }"
             class="flex items-center mb-9"
