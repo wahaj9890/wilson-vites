@@ -5,7 +5,7 @@
     <p class="font-bold underline md:hidden">
       {{ $t("login.wilson.welcome") }}
     </p>
-    <div v-if="!hideSpinner" class="flex gap-4 flex-wrap" >
+    <div v-if="!hideSpinner" class="flex gap-4 flex-wrap">
       <SfLoaderCircular class="!ring-yellow-200" size="2xl" />
     </div>
     <form class="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
@@ -79,7 +79,7 @@ export default {
       profile: "",
       userInfo: "",
       loggedIn: false,
-      hideSpinner:true,
+      hideSpinner: true,
       accessToken: "",
       error: "",
       returnUrl: "/returns",
@@ -146,13 +146,15 @@ export default {
           scopes: ["user.read", "openid", "profile"],
         });
         this.account = this.$msalInstance.getAllAccounts();
-        
+
         if (this.account.length > 0) {
           this.account = this.account[0];
           await this.acquireTokenAndMakeGraphRequest();
         }
       } catch (error) {
-        alert(" Error Login");
+        // alert(" Error Login");
+        this.$store.dispatch("notifications/showErrorToast", "Login Fails");
+
         console.error(`error during authentication: ${error}`);
       }
     },

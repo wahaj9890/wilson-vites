@@ -10,11 +10,19 @@
         >
           <i class="fas fa-arrow-left mr-3"></i> Back to Search
         </button>
-        <button
-          class="flex items-center space-x-1 text-gray-500 bg-[#F3E43E] p-2 rounded"
-        >
-          Reclamation History <i class="fas fa-cog"></i>
-        </button>
+
+        <div class="flex items-center space-x-4">
+          <button
+            class="flex items-center space-x-1 text-gray-500 bg-[#F3E43E] p-2 rounded"
+            @click="showH"
+          >
+            Reclamation History
+          </button>
+
+          <span>
+            <i class="fas fa-cog"></i>
+          </span>
+        </div>
       </div>
 
       <div
@@ -25,13 +33,31 @@
         <i :class="['fas', cardVisible ? 'fa-minus' : 'fa-plus']"></i>
       </div>
 
-      <div class="flex items-center mb-4 bg-[#DDDDDD] p-3">
-        <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-500" />
+      <div class="flex items-center mb-4 bg-[#DDDDDD] p-3" v-if="cardVisible">
+        <input
+          type="checkbox"
+          class="form-checkbox h-5 w-5 text-blue-500"
+          v-model="selectAllCheckBox"
+          @click="selectAllItemsToReturn"
+        />
         <h2 class="text-xl ml-3">Select all items</h2>
       </div>
 
       <transition name="fade">
         <div v-if="cardVisible" class="grid grid-cols-4 gap-4">
+          <div v-if="showSpinner">
+            <svg class="animate-bounce w-6 h-6 ..." animation="bounce">
+              <!-- ... -->
+            </svg>
+            <button type="button" class="bg-indigo-500 ..." disabled>
+              <svg
+                class="animate-spin h-5 w-5 mr-3 ..."
+                animation="spin"
+                viewBox="0 0 24 24"
+              ></svg>
+              Loading...
+            </button>
+          </div>
           <div
             :class="[
               'flex justify-between p-4',
@@ -39,6 +65,7 @@
             ]"
             v-for="(orderItem, index) in orderInformation"
             :key="orderItem.articleNumber"
+            @click="openSidebar(orderItem.articleNumber)"
           >
             <div>
               <h3 class="text-lg font-bold">{{ orderItem.articleNumber }}</h3>
@@ -79,6 +106,17 @@
           </div>
         </div>
       </transition>
+      <!-- <ViewArticleDetails
+        v-if="isSidebarOpen"
+        :selectedArticleNumber="selectedArticleNumber"
+        :isSidebarOpen="isSidebarOpen"
+        @closeed="closeSidebar"
+      /> -->
+      <ReclamationHistory
+        v-if="showReclamationHistory"
+        :closeDialog="closeDialog"
+        :returnOrderId="returnOrderId"
+      />
     </div>
   </div>
 </template>
@@ -88,18 +126,32 @@ import { ref, onMounted, computed, reactive } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
 import { eventBus } from "../../utils/eventBus";
+import ViewArticleDetails from "../common/ViewArticleDetails.vue";
+import ReclamationHistory from "../common/ReclamationHistory.vue";
 export default {
   name: "OrderInformation",
+  components: {
+    ViewArticleDetails,
+    ReclamationHistory,
+  },
   setup() {
     const router = useRouter();
     const store = useStore();
     const cardVisible = ref(true);
     const checkBoxChecked = ref(false);
     const specificReasonSelected = ref(false);
+    const selectAllCheckBox = ref(false);
     const route = useRoute();
     const returnOrderId = route.query.orderId;
+
+    const isSidebarOpen = ref(false);
+    const showReclamationHistory = ref(false);
+    const selectedArticleNumber = ref("");
     const orderInformation = computed(
       () => store.state.searchReturnOrder.orderItemsToReturn.orderItems || {}
+    );
+    const showSpinner = computed(
+      () => store.state.searchReturnOrder.showSpinner
     );
     const checkBoxSelected = ref([]);
     const payload = {
@@ -110,13 +162,34 @@ export default {
     const toggleCardVisibility = () => {
       cardVisible.value = !cardVisible.value;
     };
+    const openSidebar = (articleNumber) => {
+      isSidebarOpen.value = true;
+      selectedArticleNumber.value = articleNumber;
+    };
 
+    const closeSidebar = () => {
+      eventBus.emit("temp", {});
+      isSidebarOpen.value = false;
+      selectedArticleNumber.value = "";
+    };
+    const handleCreate = () => {
+      console.log("Child has been created.");
+    };
+    let allSelectedIndex = [];
     const checkBoxChanged = (index, event, orderItem) => {
-      checkBoxChecked.value = checkBoxSelected.value[index]
+      if (event.target.checked) {
+        allSelectedIndex.push(index);
+      } else {
+        const indexToRemove = allSelectedIndex.indexOf(index);
+        if (indexToRemove !== -1) {
+          allSelectedIndex.splice(indexToRemove, 1);
+        }
+      }
+      checkBoxChecked.value = checkBoxSelected.value[index];
       eventBus.emit("specificReasonSelectedChanged", {
         value: specificReasonSelected.value,
         checked: checkBoxChecked.value,
-        index,
+        index: allSelectedIndex,
         orderItem,
       });
     };
@@ -124,6 +197,33 @@ export default {
     function backToSearch() {
       router.push("/returns");
     }
+    const showH = () => {
+      showReclamationHistory.value = !showReclamationHistory.value;
+    };
+    const closeDialog = () => {
+      showReclamationHistory.value = false;
+    };
+    const selectAllItemsToReturn = () => {
+      // checkBoxSelected.value = orderInformation.value.map((item,index) => !selectAllCheckBox.value);
+      // allSelectedIndex.push(index)
+      checkBoxSelected.value = orderInformation.value.map((item, index) => {
+        const isSelected = !selectAllCheckBox.value;
+        if (isSelected && !allSelectedIndex.includes(index)) {
+          allSelectedIndex.push(index);
+        } else if (!isSelected) {
+          const indexToRemove = allSelectedIndex.indexOf(index);
+          if (indexToRemove !== -1) {
+            allSelectedIndex.splice(indexToRemove, 1);
+          }
+        }
+        return isSelected;
+      });
+      eventBus.emit("specificReasonSelectedChanged", {
+        value: specificReasonSelected.value,
+        index: allSelectedIndex,
+        orderItem: null, // No specific order item for the "Select all items" case
+      });
+    };
     onMounted(async () => {
       await store.dispatch("searchReturnOrder/getOrdersToReturn", payload);
 
@@ -136,9 +236,21 @@ export default {
       checkBoxChecked,
       cardVisible,
       specificReasonSelected,
+      isSidebarOpen,
+      selectedArticleNumber,
+      showReclamationHistory,
+      returnOrderId,
+      showSpinner,
+      selectAllCheckBox,
+      openSidebar,
+      closeSidebar,
       checkBoxChanged,
       backToSearch,
       toggleCardVisibility,
+      handleCreate,
+      showH,
+      closeDialog,
+      selectAllItemsToReturn,
     };
   },
 };
@@ -152,5 +264,24 @@ export default {
 .fade-enter,
 .fade-leave-to {
   opacity: 0;
+}
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

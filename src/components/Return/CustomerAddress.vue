@@ -1,6 +1,7 @@
 <script>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
 import { useStore } from "vuex";
+import { eventBus } from "../../utils/eventBus";
 export default {
   name: "CustomerAddress",
   setup() {
@@ -8,7 +9,14 @@ export default {
     const showCustomerAddress = ref(false);
     const showReturnInformation = ref(false);
     const showNewAddressTable = ref(false);
-
+    const alternateFirstName = ref("");
+    const alternateLastName = ref("");
+    const alternateStreet = ref("");
+    const alternatePostalCode = ref("");
+    const alternateCity = ref("");
+    const alternateCountry = ref("");
+    const alternateAdditionalInfo = ref("");
+    const alternateAddressForm = ref("");
     const toggleCustomerInformation = () => {
       showReturnInformation.value = !showReturnInformation.value;
     };
@@ -18,9 +26,29 @@ export default {
     const deliveryAddress = computed(
       () => store.state.searchReturnOrder.orderItemsToReturn.deliveryAddress
     );
-    const saveNewAddress = () => {};
+    const saveNewAddress = () => {
+      alternateAddressForm.value = {
+        firstname: alternateFirstName,
+        lastname: alternateLastName,
+        additionalDetails: alternateAdditionalInfo,
+        // houseNumber: alternativeAddress.houseNumber,
+        street: alternateStreet,
+        postalCode: alternatePostalCode,
+        // mobilePhoneNumber: alternativeAddress.mobilePhoneNumber,
+        city: alternateCity,
+        countryCode: deliveryAddress.value.countryName,
+      };
+      sessionStorage.setItem(
+        "additionalAddress",
+        JSON.stringify(alternateAddressForm.value)
+      );
+      showNewAddressTable.value = false;
+    };
     const deleteAddress = () => {
       showNewAddressTable.value = false;
+    };
+    const callSubmitReturn = () => {
+      eventBus.emit('submitReturn')
     };
     onMounted(() => {});
     return {
@@ -28,10 +56,19 @@ export default {
       showCustomerAddress,
       showReturnInformation,
       showNewAddressTable,
+      alternateFirstName,
+      alternateLastName,
+      alternateStreet,
+      alternatePostalCode,
+      alternateCity,
+      alternateCountry,
+      alternateAdditionalInfo,
+      alternateAddressForm,
       toggleCustomerInformation,
       toggleCustomerAddress,
       saveNewAddress,
-      deleteAddress
+      deleteAddress,
+      callSubmitReturn
     };
   },
 };
@@ -102,12 +139,24 @@ export default {
         >
           <tbody>
             <tr class="bg-gray-200 text-black mb-2">
-              <td class="p-2 font-bold">Alternative Name</td>
+              <td class="p-2 font-bold">Alternative FirstName</td>
               <td class="p-2">
                 <input
                   type="text"
+                  v-model="alternateFirstName"
                   class="w-full p-2 border border-gray-300 rounded"
-                  placeholder="Name"
+                  placeholder="First Name"
+                />
+              </td>
+            </tr>
+            <tr class="bg-gray-200 text-black mb-2">
+              <td class="p-2 font-bold">Alternative LastName</td>
+              <td class="p-2">
+                <input
+                  type="text"
+                  v-model="alternateLastName"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  placeholder="Last Name"
                 />
               </td>
             </tr>
@@ -116,6 +165,7 @@ export default {
               <td class="p-2">
                 <input
                   type="text"
+                  v-model="alternateStreet"
                   class="w-full p-2 border border-gray-300 rounded"
                   placeholder="Street"
                 />
@@ -126,6 +176,7 @@ export default {
               <td class="p-2">
                 <input
                   type="text"
+                  v-model="alternatePostalCode"
                   class="w-full p-2 border border-gray-300 rounded"
                   placeholder="Postal Code"
                 />
@@ -136,6 +187,7 @@ export default {
               <td class="p-2">
                 <input
                   type="text"
+                  v-model="alternateCity"
                   class="w-full p-2 border border-gray-300 rounded"
                   placeholder="City"
                 />
@@ -144,7 +196,10 @@ export default {
             <tr class="bg-gray-200 text-black mb-2">
               <td class="p-2 font-bold">Alternative Country</td>
               <td class="p-2 font-bold">
-                <select class="w-full p-2 border border-gray-300 rounded">
+                <select
+                  v-model="alternateCountry"
+                  class="w-full p-2 border border-gray-300 rounded"
+                >
                   <option value="option1">False</option>
                   <option value="option2">True</option>
                 </select>
@@ -154,6 +209,7 @@ export default {
               <td class="p-2 font-bold">Addition Info.</td>
               <input
                 type="text"
+                v-model="alternateAdditionalInfo"
                 class="w-full p-2 border border-gray-300 rounded"
                 placeholder="City"
               />
@@ -175,6 +231,7 @@ export default {
 
         <div class="flex space-x-4 mt-4">
           <button
+            @click="callSubmitReturn"
             class="py-2 px-4 bg-yellow-500 border border-gray-300 rounded"
           >
             Save

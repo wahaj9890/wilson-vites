@@ -12,13 +12,15 @@ export const searchReturnOrder = {
         setCarriersRec4po: [],
         variableRefund: "",
         acceptedOffer: null,
-        createReturnResponse: ""
+        createReturnResponse: "",
+        showSpinner: ""
     },
     mutations: {
         SET_RETURN_ORDER(state, data) {
             state.searchOrders = data.data;
         },
         SET_ORDER_ITEM_TO_RETURN(state, data) {
+
             state.orderItemsToReturn = data.data;
         },
         SET_ORDER_DETAILS(state, data) {
@@ -55,6 +57,9 @@ export const searchReturnOrder = {
         SET_CREATE_RETURN(state, data) {
             console.log(data)
             state.createReturnResponse = data
+        },
+        SET_SHOW_SPINNER(state, data) {
+            state.showSpinner = data
         }
     },
     actions: {
@@ -66,15 +71,20 @@ export const searchReturnOrder = {
                 const response = await request.post(`${environment.apiUrl}/api/orders/search-orders?culture=${state.userPreferredLang}`, { body: newData });
                 commit('SET_RETURN_ORDER', response.data);
             } catch (error) {
-                console.error('Error posting data:', error);
+                dispatch("notifications/showErrorToast", error.message, { root: true });
+
             }
         },
         async getOrdersToReturn({ commit }, payload) {
             try {
+                commit('SET_SHOW_SPINNER', true)
                 const response = await request.get(`${environment.apiUrl}/api/returns/get-orders-items-to-returns`, { params: payload });
                 commit('SET_ORDER_ITEM_TO_RETURN', response.data);
+                commit('SET_SHOW_SPINNER', false)
+
             } catch (error) {
-                console.error('Error posting data:', error);
+                dispatch("notifications/showErrorToast", error.message, { root: true });
+
             }
         },
         async getOrderDetailsAction({ commit, state }) {
@@ -82,7 +92,8 @@ export const searchReturnOrder = {
                 const response = await request.post(`${environment.apiUrl}/api/orders/get-orders-details?culture=${state.userPreferredLang}`, { body: state.globalSearch });
                 commit('SET_ORDER_DETAILS', response.data);
             } catch (error) {
-                console.error('Error posting data:', error);
+                dispatch("notifications/showErrorToast", error.message, { root: true });
+
             }
         },
         async fetchCompensation({ commit, state }, payload) {
@@ -90,15 +101,18 @@ export const searchReturnOrder = {
                 const response = await request.get(`${environment.apiUrl}/api/returns/get-compensations?culture=${state.userPreferredLang}`, { params: payload });
                 commit('SET_COMPENSATION', response.data);
             } catch (error) {
-                console.error('Error getting data:', error);
+                dispatch("notifications/showErrorToast", error.message, { root: true });
+
             }
         },
-        async fetchReturnCarriersRec4po({ commit, state }, payload) {
+        async fetchReturnCarriersRec4po({ commit, state, dispatch }, payload) {
             try {
                 const response = await request.post(`${environment.apiRec4poUrl}/order/cost`, payload);
                 commit('SET_CARRIER_RECAPO', response.data);
+
             } catch (error) {
-                console.error('Error posting data:', error);
+                dispatch("notifications/showErrorToast", error.message, { root: true });
+
             }
         },
         async checkVariableRefund({ commit }, payload) {
@@ -106,7 +120,8 @@ export const searchReturnOrder = {
                 const response = await request.get(`${environment.apiUrl}/api/variablerefund/refund-rate`, { params: payload });
                 commit('SET_VARIABLE_REFUND', response.data);
             } catch (error) {
-                console.error('Error posting data:', error);
+                dispatch("notifications/showErrorToast", error.message, { root: true });
+
             }
         },
         async onUserAcceptedOffer({ commit, state }, payload) {
@@ -114,16 +129,16 @@ export const searchReturnOrder = {
                 const response = await request.post(`${environment.apiUrl}/api/variablerefund/apply`, { body: payload });
                 commit('SET_ACCEPT_OFFER_DISCOUNT', response.data);
             } catch (error) {
-                console.error('Error posting data:', error);
+                dispatch("notifications/showErrorToast", error.message, { root: true });
+
             }
         },
-        async createReturn({ commit, state }, payload) {
-            console.log(payload)
+        async createReturn({ commit, state, dispatch }, payload) {
             try {
                 const response = await request.post(`${environment.apiUrl}/api/returns/create-returns`, { body: payload });
                 commit('SET_CREATE_RETURN', response.data);
             } catch (error) {
-                console.error('Error posting data:', error);
+                dispatch("notifications/showErrorToast", error.message, { root: true });
             }
         },
 

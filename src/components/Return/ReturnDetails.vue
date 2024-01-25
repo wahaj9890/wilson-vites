@@ -8,9 +8,9 @@
             :key="column.key"
             :class="[
               'border border-gray-300 p-2 text-left',
-              'bg-gray-100' ,
-              index % 2 === 0 ? 'bg-[#F0F0F0]' : '' ,
-              index % 2 !== 0 ? 'bg-[#F7F7F7]' : '' ,
+              'bg-gray-100',
+              index % 2 === 0 ? 'bg-[#F0F0F0]' : '',
+              index % 2 !== 0 ? 'bg-[#F7F7F7]' : '',
             ]"
           >
             {{ column.label }}
@@ -42,7 +42,10 @@
             >
               Create
             </button>
-            <button class="bg-[#FFFFFF] text-black border px-2 py-1">
+            <button
+              class="bg-[#FFFFFF] text-black border px-2 py-1"
+              @click="navigateToCreateReturn(item.orderId, true)"
+            >
               Manage
             </button>
           </div>
@@ -140,8 +143,11 @@ export default {
       //   download: "None",
       // },
     ]);
-    function navigateToCreateReturn(orderId) {
-      router.push({ name: "create-return", query: { orderId: orderId } });
+    function navigateToCreateReturn(orderId,isManageReturn) {
+      router.push({
+        name: "create-return",
+        query: { orderId, isManageReturn },
+      });
     }
 
     store.watch(
@@ -162,6 +168,4 @@ export default {
 };
 </script>
 
-<style scoped>
-/* Add custom styles if needed */
-</style>
+<style scoped></style>
