@@ -5,7 +5,7 @@ import { searchReturnOrder } from './Modules/searchReturnOrder';
 import { global } from './Modules/global';
 import { reclamationHistory } from './Modules/reclamationHistory';
 import { notifications } from './Modules/notifications'
-
+import {technicalCheck} from "./Modules/technicalCheck"
 const secureLs = new SecureLS({ isCompression: false });
 export default createStore({
   state() {
@@ -44,7 +44,8 @@ export default createStore({
     searchReturnOrder,
     global,
     notifications,
-    reclamationHistory
+    reclamationHistory,
+    technicalCheck
   },
   plugins: [
     createPersistedState({

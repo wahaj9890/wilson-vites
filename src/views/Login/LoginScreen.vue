@@ -1,15 +1,15 @@
 <template>
   <div
-    class="flex flex-col items-center justify-center min-h-screen overflow-hidden grayFair"
+    class="flex flex-col items-center min-h-[90vh] overflow-hidden bg-[#F7F7F7]"
   >
-    <p class="font-bold underline md:hidden">
+    <p class="font-bold mainHeading underline md:hidden">
       {{ $t("login.wilson.welcome") }}
     </p>
     <div v-if="!hideSpinner" class="flex gap-4 flex-wrap">
       <SfLoaderCircular class="!ring-yellow-200" size="2xl" />
     </div>
-    <form class="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-      <h2 class="text-2xl font-bold mb-6">{{ $t("loginBtn") }}</h2>
+    <form class="bg-white p-8 rounded-lg shadow-md max-w-md mt-14 w-full">
+      <h2 class="loginHeading font-bold mb-6">{{ $t("loginBtn") }}</h2>
 
       <div class="mb-4">
         <label
@@ -52,7 +52,7 @@
       </div>
 
       <button
-        class="bg-yellow-400 text-black font-bold py-2 px-4 rounded-md w-full hover:bg-yellow-500 focus:outline-none focus:ring focus:border-gray-700"
+        class="bg-yellow-400 loginHeading text-black py-2 px-4 rounded-md w-full hover:bg-yellow-500 focus:outline-none focus:ring focus:border-gray-700"
         @click.prevent="SignIn"
       >
         {{ $t("loginBtn") }}
@@ -66,9 +66,8 @@ import { PublicClientApplication } from "@azure/msal-browser";
 import { environment } from "../../environment";
 import request from "../../utils/request";
 import { useRouter } from "vue-router";
-import { mapState, mapActions } from "vuex";
+import { mapState } from "vuex";
 import { SfLoaderCircular } from "@storefront-ui/vue";
-
 export default {
   name: "LoginScreen",
   data() {
@@ -363,7 +362,4 @@ export default {
 </script>
 
 <style scoped>
-.grayFair {
-  background-color: #f7f7f7;
-}
 </style>

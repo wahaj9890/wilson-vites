@@ -66,7 +66,7 @@ export const searchReturnOrder = {
         storeData({ commit }, payload) {
             commit('SEARCH_RETURN_ORDER', payload);
         },
-        async searchReturnAction({ commit, state }, newData) {
+        async searchReturnAction({ commit, state,dispatch }, newData) {
             try {
                 const response = await request.post(`${environment.apiUrl}/api/orders/search-orders?culture=${state.userPreferredLang}`, { body: newData });
                 commit('SET_RETURN_ORDER', response.data);
@@ -75,7 +75,7 @@ export const searchReturnOrder = {
 
             }
         },
-        async getOrdersToReturn({ commit }, payload) {
+        async getOrdersToReturn({ commit,dispatch }, payload) {
             try {
                 commit('SET_SHOW_SPINNER', true)
                 const response = await request.get(`${environment.apiUrl}/api/returns/get-orders-items-to-returns`, { params: payload });
@@ -87,7 +87,7 @@ export const searchReturnOrder = {
 
             }
         },
-        async getOrderDetailsAction({ commit, state }) {
+        async getOrderDetailsAction({ commit, state,dispatch }) {
             try {
                 const response = await request.post(`${environment.apiUrl}/api/orders/get-orders-details?culture=${state.userPreferredLang}`, { body: state.globalSearch });
                 commit('SET_ORDER_DETAILS', response.data);
@@ -96,7 +96,7 @@ export const searchReturnOrder = {
 
             }
         },
-        async fetchCompensation({ commit, state }, payload) {
+        async fetchCompensation({ commit, state,dispatch }, payload) {
             try {
                 const response = await request.get(`${environment.apiUrl}/api/returns/get-compensations?culture=${state.userPreferredLang}`, { params: payload });
                 commit('SET_COMPENSATION', response.data);
@@ -115,7 +115,7 @@ export const searchReturnOrder = {
 
             }
         },
-        async checkVariableRefund({ commit }, payload) {
+        async checkVariableRefund({ commit ,dispatch}, payload) {
             try {
                 const response = await request.get(`${environment.apiUrl}/api/variablerefund/refund-rate`, { params: payload });
                 commit('SET_VARIABLE_REFUND', response.data);
@@ -124,7 +124,7 @@ export const searchReturnOrder = {
 
             }
         },
-        async onUserAcceptedOffer({ commit, state }, payload) {
+        async onUserAcceptedOffer({ commit, state ,dispatch}, payload) {
             try {
                 const response = await request.post(`${environment.apiUrl}/api/variablerefund/apply`, { body: payload });
                 commit('SET_ACCEPT_OFFER_DISCOUNT', response.data);

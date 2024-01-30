@@ -32,7 +32,6 @@
         </div>
       </div>
 
-      <!-- Search Button -->
       <button
         class="bg-[#F3E43E] py-2 px-12 text-black"
         @click="searchByDeliveryNumber"
@@ -53,7 +52,14 @@ export default {
     const store = useStore();
     const deliveryNumber = ref("");
 
-    const searchByDeliveryNumber = () => {};
+    const searchByDeliveryNumber = () => {
+      let returnDeliveryId = deliveryNumber.value;
+
+      store.dispatch(
+        "technicalCheck/getReturnOrderIdFromDeliveryId",
+        returnDeliveryId
+      );
+    };
     return {
       deliveryNumber,
       searchByDeliveryNumber,

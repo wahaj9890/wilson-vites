@@ -1,0 +1,81 @@
+// Colors
+/** Colors **/
+$primary-color: #000000;
+$secondary-color: #ffffff;
+$brand-color: #f3e43e;
+$brand-color-light: #fcf7c5;
+$yellow-100: #f3e43e;
+$bg-color: #e5e5e5;
+$grey-color: #f0f0f0;
+$grey-light: $grey-color;
+$grey-moderate: #dddddd;
+$grey-strong: #767676;
+$form-input-bg: #f7f7f7;
+$grey-fair: $form-input-bg;
+$step-color: #999999;
+$grey-bold: $step-color;
+$blue-darker: #273944;
+$crayola-100: #00aed8;
+$blue-info: #2b5fd6;
+$green-success: #4da25d;
+$yellow-warning: #f4bf00;
+$green-success: #4da25d;
+$red-error: #ea1903;
+/** Dimensions **/
+$container-width: 1440px;
+
+/** Values **/
+$gap-extra-small: 4px;
+$gap-mini: 10px;
+$gap-small: 12px;
+$gap-18: 18px;
+$gap-medium: 24px;
+$gap-large: 48px;
+$gap-extra-large: 72px;
+
+/** Grid Padding **/
+$grid-padding: 15px;
+
+/** line-height**/
+$line-height-small: 16px;
+$line-height-medium: 28px;
+$line-height-large: 34px;
+$line-height-extra-large: 46px;
+$line-height-normal: normal;
+
+/** Font Size **/
+$base-font-mobile: 10px;
+$base-font-size-helvetica: 10px;
+$base-font-size-16: 16px;
+$base-font-size: 12px;
+$step-font-size: 14px;
+$font-size-small: 22px;
+$font-size-medium: 26px;
+$font-size-large: 36px;
+
+$brand-logo-height: 155px;
+$brand-logo-medium: 80px;
+$brand-logo-height-mobile: 55px;
+
+/** Responsive width **/
+$media-small: 959px;
+$media-extra-small: 480px;
+
+/** Step Icon **/
+$icon-width: 32px;
+$icon-height: 32px;
+
+/*** Font family ***/
+$brelinRegular: "BrelinRegular", serif;
+$brelinBold: "BrelinBold", serif;
+$primary-font: "Helvetica", Arial, sans-serif;
+
+//*** language Switcher ***/
+$flag-width: 24px;
+$language-switcher-width: 175px;
+
+//** Dropdwon **/
+$drop-down-height: 44px;
+
+// Product item **/
+$product-image: 76px;

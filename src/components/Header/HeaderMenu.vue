@@ -1,5 +1,5 @@
 <template>
-  <header class="headerBgColor p-4 flex justify-between items-center">
+  <header class="bg-[#00aed8] p-4 flex justify-between items-center">
     <div class="flex items-center">
       <button @click="toggleSidebar" class="text-white mr-4">
         <svg
@@ -16,11 +16,41 @@
         </svg>
       </button>
       <span class="text-white text-lg font-bold md:text-xl sm:text-center"
-        >BBG</span
-      >
+        ><svg
+          width="130"
+          height="44"
+          viewBox="0 0 130 44"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g clip-path="url(#clip0_1292_38109)">
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M22.7 31.25C22.7 29.05 20.5 26.75 18.1 24.55C14.5 26.75 10.8 28.45 8.6 29.45V35.85H17.5C20 35.95 22.7 34.05 22.7 31.25ZM8.6 8.75V20.85C13 18.55 20.5 14.95 20.5 11.35C20.5 9.65 19.3 8.75 17.3 8.75H8.6ZM31.5 31.25C31.5 37.85 25.4 43.25 17.6 43.25H0V1.35H17.9C25.6 1.35 29.2 5.95 29.2 11.15C29.2 14.25 27.3 17.15 24.6 19.65C27.8 22.45 31.5 26.25 31.5 31.25ZM58.5 31.25C58.5 29.05 56.3 26.75 53.9 24.55C50.3 26.75 46.6 28.45 44.4 29.45V35.85H53.3C55.8 35.95 58.5 34.05 58.5 31.25ZM44.4 8.75V20.85C48.8 18.55 56.3 14.95 56.3 11.35C56.3 9.65 55.1 8.75 53.1 8.75H44.4ZM67.2 31.25C67.2 37.85 61.1 43.25 53.3 43.25H35.8V1.35H53.7C61.4 1.35 65 5.95 65 11.15C65 14.25 63.1 17.15 60.4 19.65C63.5 22.45 67.2 26.25 67.2 31.25ZM85.3 19.85H102.4V43.25H87C77.7 43.25 71.6 37.75 71.6 28.75V15.25C71.5 6.25 77.6 0.75 87 0.75C96.4 0.75 102.4 6.25 102.4 15.25H93.8C93.8 10.55 91.4 8.15 87 8.15C82.6 8.15 80.2 10.55 80.2 15.25V28.85C80.2 33.55 82.6 35.95 87 35.95H93.8V27.35H85.4V19.85H85.3ZM120.9 10.05C122.6 9.45 125.2 8.45 125.2 6.95C125.2 6.05 124.8 5.45 123.4 5.45H120.9V10.05ZM123.8 9.25L126.1 12.55H125.4L123.2 9.55C122.3 9.95 121.4 10.35 120.7 10.55V12.55H120.1V4.85H123.2C124.9 4.85 125.6 5.75 125.6 6.85C125.7 7.75 124.9 8.55 123.8 9.25ZM129.4 8.65C129.4 5.05 126.4 1.95 122.7 1.95C119.1 1.95 116 4.95 116 8.65C116 12.25 119 15.35 122.7 15.35C126.4 15.35 129.4 12.25 129.4 8.65ZM130 8.65C130 12.65 126.7 15.95 122.7 15.95C118.7 15.95 115.4 12.65 115.4 8.65C115.4 4.65 118.7 1.35 122.7 1.35C126.7 1.35 130 4.65 130 8.65Z"
+              fill="white"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_1292_38109">
+              <rect
+                width="130"
+                height="42.5"
+                fill="white"
+                transform="translate(0 0.75)"
+              />
+            </clipPath>
+          </defs>
+        </svg>
+      </span>
     </div>
-    <div class="hidden md:block">
-      <p class="text-white">{{ $t("login.wilson.welcome") }}</p>
+    <!-- <div class="hidden md:block flex justify-center items-center"> -->
+    <div class="flex justify-center items-center">
+      <!-- <p class="text-white mainHeading">{{ $t("login.wilson.welcome") }}</p> -->
+
+      <span class="mr-2" v-html="icon || '<span></span>'"></span>
+
+      <p class="text-white mainHeading">{{ headerMessage }}</p>
     </div>
   </header>
 
@@ -30,12 +60,15 @@
 <script>
 import SideBar from "../Navbar/SideBar.vue";
 import { mapState, mapActions } from "vuex";
-
+import { useRoute } from "vue-router";
 export default {
   name: "HeaderMenu",
   data() {
     return {
       isSidebarOpen: false,
+      icon: "",
+      headerMessage: "",
+
       token: JSON.parse(localStorage.getItem("currentUser"))?.contactLogin
         ?.token,
     };
@@ -48,6 +81,7 @@ export default {
       isAuthenticatedUser: (state) => state.global.authenticatedUser,
     }),
   },
+  mounted() {},
   methods: {
     toggleSidebar() {
       if (this.isAuthenticatedUser) {
@@ -58,11 +92,14 @@ export default {
       this.isSidebarOpen = false;
     },
   },
+  watch: {
+    $route(to, from) {
+      // Update the header message when the route changes
+      this.headerMessage = to.meta.name || "Welcome in Wilson";
+      this.icon = to.meta.icon;
+    },
+  },
 };
 </script>
 
-<style scoped>
-.headerBgColor {
-  background-color: #00aed8;
-}
-</style>
+<style scoped></style>

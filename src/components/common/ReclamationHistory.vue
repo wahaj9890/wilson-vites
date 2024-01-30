@@ -40,8 +40,8 @@
                     >
                       Reclamation History
                     </DialogTitle>
-                    <div class="mt-2">
-                      <table class="w-full">
+                    <div class="h-96 mt-2 overflow-y-auto">
+                      <table style="height: 400px" class="w-full">
                         <thead>
                           <th
                             v-for="column in reclamationHistoryColumns"

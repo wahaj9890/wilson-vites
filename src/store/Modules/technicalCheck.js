@@ -1,42 +1,45 @@
-import axios from "axios"
 import { environment } from "../../environment"
-export const searchReturnOrder = {
-    // namespaced: true,
+import request from "../../utils/request"
+export const technicalCheck = {
+    namespaced: true,
     state: {
-        orderReturnInfo: [],
-        // orderItemsToReturn: [],
+        returnDeliveryDetails: null,
+        receiveReturnDetails: null,
         // getOrderDetails: [],
     },
     mutations: {
-        SET_ORDER_RETURN_INFO(state, data) {
-            state.orderReturnInfo = data.data;
+        SET_RETURN_DELIVERY_DETAILS(state, data) {
+            state.returnDeliveryDetails = data.data;
         },
-        // SET_ORDER_ITEM_TO_RETURN(state, data) {
-        //     state.orderItemsToReturn = data.data;
-        //     // console.log(state.orderItemsToReturn)
-        // },
+        SET_RECEIVE_RETURN_DETAILS(state, data) {
+            state.receiveReturnDetails = data.data;
+            console.log(state.receiveReturnDetails)
+        },
         // SET_ORDER_DETAILS(state, data) {
         //     state.getOrderDetails = data.data;
         // }
     },
     actions: {
-        async getReturnOrderInfo({ commit }, newData) {
+        async getReturnOrderIdFromDeliveryId({ commit,dispatch }, returnDeliveryId) {
             try {
-                const response = await axios.get("https://wilson-api-dev01d-featuretest2.azurewebsites.net/api/orders/search-orders?culture=en-GB", newData);
-                // const response = await axios.post("../../../public/searachReturn.json", newData);
-                commit('SET_RETURN_ORDER', response.data);
+                const response = await request.get(`${environment.apiUrl}/api/returnmask/get-return-order-id/${returnDeliveryId}`);
+                commit('SET_RETURN_DELIVERY_DETAILS', response.data);
+                let payload = {
+                    returnOrderId:response.data.data
+                }
+                await dispatch("fetchReceiveReturnDetails", payload)
             } catch (error) {
                 console.error('Error posting data:', error);
             }
         },
-        // async getOrdersToReturn({ commit },) {
-        //     try {
-        //         const response = await axios.get('../../public/getReturnOrder.json');
-        //         commit('SET_ORDER_ITEM_TO_RETURN', response.data);
-        //     } catch (error) {
-        //         console.error('Error posting data:', error);
-        //     }
-        // },
+        async fetchReceiveReturnDetails({ commit }, payload) {
+            try {
+                const response = await request.get(`${environment.apiUrl}/api/returns/get-receive-return-details`, { params:payload});
+                commit('SET_RECEIVE_RETURN_DETAILS', response.data);
+            } catch (error) {
+                console.error('Error posting data:', error);
+            }
+        },
         // async getOrderDetailsAction({ commit }, newData) {
         //     try {
         //         const response = await axios.post('../../public/getOrderDetails.json', newData);
