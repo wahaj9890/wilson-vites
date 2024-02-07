@@ -5,7 +5,10 @@ import { searchReturnOrder } from './Modules/searchReturnOrder';
 import { global } from './Modules/global';
 import { reclamationHistory } from './Modules/reclamationHistory';
 import { notifications } from './Modules/notifications'
-import {technicalCheck} from "./Modules/technicalCheck"
+import { technicalCheck } from "./Modules/technicalCheck"
+import { repair } from "./Modules/repair"
+import { refurbish } from './Modules/refurbish';
+import { returnInspection } from './Modules/returnInspection';
 const secureLs = new SecureLS({ isCompression: false });
 export default createStore({
   state() {
@@ -45,7 +48,10 @@ export default createStore({
     global,
     notifications,
     reclamationHistory,
-    technicalCheck
+    technicalCheck,
+    repair,
+    refurbish,
+    returnInspection
   },
   plugins: [
     createPersistedState({

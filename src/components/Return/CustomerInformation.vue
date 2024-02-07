@@ -494,7 +494,6 @@ export default {
     ) => {
       let payload = { appRoleId, consequentialDamage, coolingOff };
       store.dispatch("searchReturnOrder/fetchCompensation", payload);
-      // toast.success("You did it! 🎉");
     };
     const onShipmentChange = () => {
       group.value.shipmentNeeded = Boolean(selectedReturnShipment.value);

@@ -42,22 +42,25 @@
         />
         <h2 class="text-xl ml-3">Select all items</h2>
       </div>
-
+      <div v-if="showSpinner &&cardVisible " class="flex items-center justify-center">
+        <div
+          class="animate-bounce bg-white dark:bg-slate-800 p-2 w-10 h-10 ring-1 ring-slate-900/5 dark:ring-slate-200/20 shadow-lg rounded-full flex items-center justify-center"
+        >
+          <svg
+            class="w-6 h-6 text-violet-500"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+          </svg>
+        </div>
+      </div>
       <transition name="fade">
         <div v-if="cardVisible" class="grid grid-cols-4 gap-4">
-          <div v-if="showSpinner">
-            <svg class="animate-bounce w-6 h-6 ..." animation="bounce">
-              <!-- ... -->
-            </svg>
-            <button type="button" class="bg-indigo-500 ..." disabled>
-              <svg
-                class="animate-spin h-5 w-5 mr-3 ..."
-                animation="spin"
-                viewBox="0 0 24 24"
-              ></svg>
-              Loading...
-            </button>
-          </div>
           <div
             :class="[
               'flex justify-between p-4',
