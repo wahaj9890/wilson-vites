@@ -11,7 +11,6 @@ import { eventBus } from "./utils/eventBus"
 import Toast from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 const app = createApp(App);
-// app.use(createMsalPlugin())
 app.use(i18n)
 app.use(Toast);
 

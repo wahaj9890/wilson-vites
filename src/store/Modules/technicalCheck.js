@@ -33,7 +33,6 @@ export const technicalCheck = {
         },
         SET_MAST_DATA_RETURN_ORDER(state, data) {
             state.maskDataReturnOrder = data.data
-            console.log(state.maskDataReturnOrder)
         },
         SET_TECHNICAL_CHECK(state, data) {
             state.technicalCheckDetails = data.data

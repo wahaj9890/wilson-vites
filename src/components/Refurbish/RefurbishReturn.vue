@@ -10,13 +10,15 @@
           class="bg-gray-200 text-black font-bold cursor-pointer py-2 px-4 mb-4"
           @click="toggleRefurbish"
         >
-          <span class="mr-2">CREATE REFURBISH</span>
+          <span class="mr-2 brelinBold">{{
+            isStepAllowed ? "CREATE REFURBISH" : "REFURBISH SUMMARY"
+          }}</span>
           <i
             :class="['float-right fas', showRefurbish ? 'fa-minus' : 'fa-plus']"
           ></i>
         </div>
         <table
-          v-if="showRefurbish"
+          v-if="showRefurbish && isStepAllowed"
           class="w-full table-auto border border-gray-300 border-separate border-slate-400"
         >
           <tbody>
@@ -86,6 +88,27 @@
             <!-- Add more rows for other fields as needed -->
           </tbody>
         </table>
+        <table
+          v-if="showRefurbish && !isStepAllowed"
+          class="w-full table-auto border border-gray-300 border-separate border-slate-400"
+        >
+          <tbody>
+            <tr
+              v-for="(item, index) in returnRefurbishCols"
+              :key="index"
+              :class="[
+                ' text-black mb-2',
+                index % 2 === 0 ? 'bg-[#F0F0F0]' : 'bg-[#F7F7F7]',
+              ]"
+            >
+              <td class="p-2 font-bold w-1/4">{{ item.label }}</td>
+
+              <td v-if="maskRefurbishResult">
+                {{ maskRefurbishResult[item.key] }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
         <button @click="saveRefurbish">Save</button>
         <button
           class="absolute bottom-0 right-0 py-2 px-4 bg-black text-white border border-gray-300 rounded"
@@ -118,6 +141,20 @@ export default {
     const selectedRefurbishResult = ref(null);
     const selectedRefurbishComments = ref(null);
     const selectedEstimationCondition = ref(null);
+    const returnRefurbishCols = ref([
+      { key: "onOffTestValue", label: "On-Off Test" },
+      {
+        key: "refurbishResultId",
+        label: "Refurbish",
+      },
+      { key: "estimatedCondition", label: "Estimated Condition" },
+      { key: "refurbishComments", label: "Refurbish Comments" },
+      { key: "createdOn", label: "Created On" },
+      { key: "createdBy", label: "Created By" },
+    ]);
+    const isStepAllowed = computed(() => {
+      return store.state.technicalCheck.isStepAllowed;
+    });
     const toggleRefurbish = () => {
       showRefurbish.value = !showRefurbish.value;
     };
@@ -130,6 +167,10 @@ export default {
     const refurbishResults = computed(() => {
       return store.state.refurbish?.lookupDetails?.lookupTypeRefurbishResult
         ?.data;
+    });
+    const maskRefurbishResult = computed(() => {
+      return store.state.technicalCheck?.maskDataReturnOrder
+        ?.maskRefurbish;
     });
 
     const saveRefurbish = () => {
@@ -165,6 +206,9 @@ export default {
       selectedRefurbishComments,
       selectedEstimationCondition,
       receiveReturnDetails,
+      isStepAllowed,
+      returnRefurbishCols,
+      maskRefurbishResult,
       toggleRefurbish,
       saveRefurbish,
     };

@@ -18,7 +18,7 @@ const router = createRouter({
 });
 router.beforeEach((to, from, next) => {
     const isAuthenticated = JSON.parse(localStorage.getItem('currentUser'))?.contactLogin?.token;
-    if (to.meta.requiresAuth && !isAuthenticated) {
+    if (to?.meta?.requiresAuth && !isAuthenticated) {
         next('/');
     } else {
         // Continue with navigation

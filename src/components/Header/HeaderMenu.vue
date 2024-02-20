@@ -1,7 +1,7 @@
 <template>
   <header class="bg-[#00aed8] p-4 flex justify-between items-center">
     <div class="flex items-center">
-      <button @click="toggleSidebar" class="text-white mr-4">
+      <button v-if="isAuthenticatedUser" @click="toggleSidebar" class="text-white mr-4">
         <svg
           width="32"
           height="26"
@@ -68,7 +68,6 @@ export default {
       isSidebarOpen: false,
       icon: "",
       headerMessage: "",
-
       token: JSON.parse(localStorage.getItem("currentUser"))?.contactLogin
         ?.token,
     };
@@ -94,7 +93,6 @@ export default {
   },
   watch: {
     $route(to, from) {
-      // Update the header message when the route changes
       this.headerMessage = to.meta.name || "Welcome in Wilson";
       this.icon = to.meta.icon;
     },

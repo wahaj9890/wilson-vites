@@ -20,6 +20,7 @@
           v-if="receiveReturnDetails"
           :receiveReturnDetails="receiveReturnDetails"
         />
+        <div v-else>No Data</div>
       </table>
     </transition>
     <div class="flex space-x-4 mt-4">

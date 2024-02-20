@@ -3,12 +3,36 @@
     <p class="font-bold underline md:hidden">
       {{ $t("login.wilson.welcome") }}
     </p>
-    <p class="font-bold mt-4 text-2xl">{{ $t("return.search.for") }}</p>
+    <p class="font-bold mt-4 text-2xl primaryHeading">
+      {{ $t("pages.returnsPage.fields.searchFor") }}
+    </p>
     <div class="md:flex items-center space-x-4 pt-2">
-      <div class="mb-4 md:w-1/4">
-        <label for="orderNumber" class="uppercase text-sm text-gray-600 mb-1">{{
-          $t("return.order.number")
-        }}</label>
+      <div v-for="field in fieldsCol" class="mb-4 md:w-1/4">
+        <label
+          for="orderNumber"
+          class="uppercase colsHeaders text-sm text-gray-600 mb-1"
+          >{{ field.label }}</label
+        >
+        <div class="relative">
+          <input
+            :type="field.type"
+            :name="field.name"
+            v-model="searchReturnPayload[field.model]"
+            :placeholder="field.placeholder"
+            class="w-full px-3 py-2 border border-gray-300"
+          />
+          <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
+            <i class="fas fa-search text-gray-500"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- <div class="mb-4 md:w-1/4">
+        <label
+          for="orderNumber"
+          class="uppercase colsHeaders text-sm text-gray-600 mb-1"
+          >{{ $t("return.orderNumber") }}</label
+        >
         <div class="relative">
           <input
             id="orderNumber"
@@ -26,7 +50,7 @@
         <label
           for="customerNumber"
           class="uppercase text-sm text-gray-600 mb-1"
-          >{{ $t("return.customer.number") }}</label
+          >{{ $t("return.customerNumber") }}</label
         >
         <div class="relative">
           <input
@@ -37,7 +61,6 @@
             class="w-full px-3 py-2 border border-gray-300"
           />
           <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
-            <!-- Search Icon for Input 1 -->
             <i class="fas fa-search text-gray-500"></i>
           </div>
         </div>
@@ -46,7 +69,7 @@
         <label
           for="invoiceNumber"
           class="uppercase text-sm text-gray-600 mb-1"
-          >{{ $t("return.invoice.number") }}</label
+          >{{ $t("return.invoiceNumber") }}</label
         >
         <div class="relative">
           <input
@@ -57,7 +80,6 @@
             class="w-full px-3 py-2 border border-gray-300"
           />
           <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
-            <!-- Search Icon for Input 1 -->
             <i class="fas fa-search text-gray-500"></i>
           </div>
         </div>
@@ -66,7 +88,7 @@
         <label
           for="customerReferenceNumber"
           class="uppercase text-sm text-gray-600 mb-1"
-          >{{ $t("return.customerReference.number") }}</label
+          >{{ $t("return.customerReferenceNumber") }}</label
         >
         <div class="relative">
           <input
@@ -79,14 +101,14 @@
           <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
             <i class="fas fa-search text-gray-500"></i>
           </div>
-        </div>
+        </div> 
       </div>
 
       <div class="mb-4 md:w-1/4">
         <label
           for="trackingNumber"
           class="uppercase text-sm text-gray-600 mb-1"
-          >{{ $t("return.tracking.number") }}</label
+          >{{ $t("return.trackingNumber") }}</label
         >
         <div class="relative">
           <input
@@ -97,14 +119,13 @@
             class="w-full px-3 py-2 border border-gray-300"
           />
           <div class="absolute top-1/2 right-3 transform -translate-y-1/2">
-            <!-- Search Icon for Input 5 -->
             <i class="fas fa-search text-gray-500"></i>
           </div>
         </div>
-      </div>
+      </div>-->
 
       <button
-        class="bg-[#F3E43E] w-full md:w-auto px-12 py-2 text-black font-semibold"
+        class="bg-[#F3E43E] w-full md:w-auto px-12 py-2 font-sans text-black font-semibold"
         @click="searchOrder"
       >
         {{ $t("return.search") }}
@@ -112,7 +133,7 @@
     </div>
     <div class="mb-4 md:flex items-center justify-end space-x-4">
       <label for="orderBy" class="text-sm text-black font-bold mb-1"
-        >{{ $t("return.order.by") }}:</label
+        >{{ $t("return.orderBy") }}:</label
       >
       <div class="relative">
         <select
@@ -134,19 +155,35 @@
 
 <script>
 // import { httpGet, httpPost } from "../../utils/request";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, reactive } from "vue";
+import i18n from "../../i18ns/i18n";
 import { useStore } from "vuex";
 import ReturnDetails from "../Return/ReturnDetails.vue";
+import { fields } from "../../utils/fieldNames";
+
 export default {
   name: "ReturnSearch",
   components: {
     ReturnDetails,
   },
   setup() {
+    // console.log(JSON.parse(i18n.global.t("fields")));
     const store = useStore();
-
+    const fieldsCol = ref(fields);
     const orderNumber = ref("");
     const invoiceNumber = ref("");
+
+    const searchReturnPayload = reactive({
+      orderNumber: "",
+      customerNumber: "",
+      invoiceNumber: "",
+      customerReferenceNumber: "",
+      trackingNumber: "",
+    });
+    // const returnsFields = ref(
+    //   JSON.parse(i18n.global.t("fields").replace(/'/g, '"'))
+    // );
+    // const returnsFields = ref(JSON.parse(i18n.global.t("fields")));
     const customerNumber = ref("");
     const customerReferenceNumber = ref("");
     const trackingNumber = ref("");
@@ -156,12 +193,13 @@ export default {
     });
     let payload;
     function searchOrder() {
+      console.log(searchReturnPayload);
       payload = {
-        orderId: orderNumber.value,
-        customerNumber: customerNumber.value,
-        invoiceNumber: invoiceNumber.value,
-        customerReferenceNumber: customerReferenceNumber.value,
-        orderTrackingNumber: trackingNumber.value,
+        orderId: searchReturnPayload.orderNumber,
+        customerNumber: searchReturnPayload.customerNumber,
+        invoiceNumber: searchReturnPayload.invoiceNumber,
+        customerReferenceNumber: searchReturnPayload.customerReferenceNumber,
+        orderTrackingNumber: searchReturnPayload.trackingNumber,
         firstName: "",
         lastName: "",
       };
@@ -169,7 +207,11 @@ export default {
       store.dispatch("searchReturnOrder/storeData", payload);
     }
     onMounted(() => {
-      if (globalSearch !== null) {
+      console.log("fields", fields);
+      let temp = i18n.global.t("fields");
+      console.log("-----onMounted-----", temp);
+      console.log(typeof temp);
+      if (!!globalSearch) {
         store.dispatch(
           "searchReturnOrder/searchReturnAction",
           globalSearch.value
@@ -179,6 +221,10 @@ export default {
     return {
       searchOrder,
       orderNumber,
+      fieldsCol,
+      searchReturnPayload,
+      // temp,
+      // returnsFields,
       customerNumber,
       customerReferenceNumber,
       invoiceNumber,

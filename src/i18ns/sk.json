@@ -1,14 +1,24 @@
 {
-  "loginBtn": "Prihlásiť sa",
-  "login.wilson.welcome": "Vitajte vo Wilsonove",
-  "login.language": "Jazyk",
-  "login.profile": "Profil",
-  "return.search.for": "Hľadať",
-  "return.order.number": "číslo objednávky",
-  "return.customer.number": "zákaznícke číslo",
-  "return.invoice.number": "číslo faktúry",
-  "return.customerReference.number": "referenčné číslo zákazníka",
-  "return.tracking.number": "Sledovacie číslo",
-  "return.search": "Vyhľadávanie",
-  "return.order.by": "Zoradiť podľa"
+  "login": {
+    "wilson": {
+      "welcom": "Vitajte vo Wilsonove"
+    },
+    "Btn": "Prihlásiť sa",
+    "language": "Jazyk",
+    "profile": "Profil"
+  },
+  "pages": {
+    "returnsPage": { 
+      "fields": {
+        "searchFor": "Hľadať",
+        "orderNumber": "číslo objednávky",
+        "customerNumber": "zákaznícke číslo",
+        "invoiceNumber": "číslo faktúry",
+        "customerReferenceNumber": "referenčné číslo zákazníka",
+        "trackingNumber": "Sledovacie číslo",
+        "search": "Vyhľadávanie",
+        "orderBy": "Zoradiť podľa"
+      }
+    }
+  }
 }

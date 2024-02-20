@@ -8,9 +8,8 @@
           class="bg-[#DDDDDD] cursor-pointer text-black font-bold py-2 px-4 mb-4"
           @click="toggleTechnicalCheck"
         >
-        <pre>{{ isStepAllowed }}</pre>
           <span class="mr-2">{{
-            !isStepAllowed ? "CREATE TECHNICAL CHECK" : "Technical Check"
+            isStepAllowed ? "CREATE TECHNICAL CHECK" : "TECHNICAL CHECK SUMMARY"
           }}</span>
           <i
             :class="[
@@ -75,7 +74,7 @@
         <table
           v-if="showTechnicalCheck && !isStepAllowed"
           class="w-full table-auto border border-gray-300 border-separate border-slate-400"
-        >
+         >
           <tbody>
             <tr
               v-for="(item, index) in returnTechnicalCheckCols"
@@ -85,7 +84,6 @@
                 index % 2 === 0 ? 'bg-[#F0F0F0]' : 'bg-[#F7F7F7]',
               ]"
             >
-              <!-- <pre>{{ maskTechnicalResult }}</pre>/ -->
               <td class="p-2 font-bold w-1/4">{{ item.label }}</td>
 
               <td v-if="maskTechnicalResult">

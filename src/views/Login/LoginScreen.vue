@@ -3,13 +3,13 @@
     class="flex flex-col items-center min-h-[90vh] overflow-hidden bg-[#F7F7F7]"
   >
     <p class="font-bold mainHeading underline md:hidden">
-      {{ $t("login.wilson.welcome") }}
+      {{ $t('login.wilson.welcome') }}
     </p>
     <div v-if="!hideSpinner" class="flex gap-4 flex-wrap">
       <SfLoaderCircular class="!ring-yellow-200" size="2xl" />
     </div>
     <form class="bg-white p-8 rounded-lg shadow-md max-w-md mt-14 w-full">
-      <h2 class="loginHeading font-bold mb-6">{{ $t("loginBtn") }}</h2>
+      <h2 class="primaryHeading font-bold mb-6">{{ $t("login.Btn") }}</h2>
 
       <div class="mb-4">
         <label
@@ -52,10 +52,10 @@
       </div>
 
       <button
-        class="bg-yellow-400 loginHeading text-black py-2 px-4 rounded-md w-full hover:bg-yellow-500 focus:outline-none focus:ring focus:border-gray-700"
+        class="bg-yellow-400 primaryHeading text-black py-2 px-4 rounded-md w-full hover:bg-yellow-500 focus:outline-none focus:ring focus:border-gray-700"
         @click.prevent="SignIn"
       >
-        {{ $t("loginBtn") }}
+        {{ $t("login.Btn") }}
       </button>
     </form>
   </div>
@@ -124,7 +124,7 @@ export default {
   },
   async mounted() {
     this.updateLanguage();
-    let currentUserValue = localStorage.getItem("currentUser");
+    const currentUserValue = localStorage.getItem("currentUser");
 
     if (currentUserValue) {
       this.$router.push({ name: "returns" });
