@@ -167,7 +167,6 @@ export default {
     ReturnDetails,
   },
   setup() {
-    // console.log(JSON.parse(i18n.global.t("fields")));
     const store = useStore();
     const fieldsCol = ref(fields);
     const orderNumber = ref("");
@@ -193,7 +192,6 @@ export default {
     });
     let payload;
     function searchOrder() {
-      console.log(searchReturnPayload);
       payload = {
         orderId: searchReturnPayload.orderNumber,
         customerNumber: searchReturnPayload.customerNumber,
@@ -207,10 +205,6 @@ export default {
       store.dispatch("searchReturnOrder/storeData", payload);
     }
     onMounted(() => {
-      console.log("fields", fields);
-      let temp = i18n.global.t("fields");
-      console.log("-----onMounted-----", temp);
-      console.log(typeof temp);
       if (!!globalSearch) {
         store.dispatch(
           "searchReturnOrder/searchReturnAction",

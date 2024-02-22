@@ -3,7 +3,7 @@
     class="flex flex-col items-center min-h-[90vh] overflow-hidden bg-[#F7F7F7]"
   >
     <p class="font-bold mainHeading underline md:hidden">
-      {{ $t('login.wilson.welcome') }}
+      {{ $t("login.wilson.welcome") }}
     </p>
     <div v-if="!hideSpinner" class="flex gap-4 flex-wrap">
       <SfLoaderCircular class="!ring-yellow-200" size="2xl" />
@@ -24,7 +24,7 @@
           class="w-full cursor-pointer px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
         >
           <option
-            v-for="lang in languages"
+            v-for="lang in selectLanguages"
             :key="lang.value"
             :value="lang.value"
           >
@@ -45,7 +45,11 @@
           @change="updateProfile(selectedProfile)"
           class="w-full cursor-pointer px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
         >
-          <option v-for="role in roles" :key="role.value" :value="role.value">
+          <option
+            v-for="role in profileRoles"
+            :key="role.value"
+            :value="role.value"
+          >
             {{ role.displayValue }}
           </option>
         </select>
@@ -63,17 +67,20 @@
 
 <script>
 import { PublicClientApplication } from "@azure/msal-browser";
-import { environment } from "../../environment";
+import { environment, graphEndPoints } from "../../environment";
 import request from "../../utils/request";
-import { useRouter } from "vue-router";
 import { mapState } from "vuex";
 import { SfLoaderCircular } from "@storefront-ui/vue";
+import { clearLocalStorage } from "../../utils/globalMethods";
+import { roles, languages } from "../../utils/lookup";
 export default {
   name: "LoginScreen",
   data() {
     return {
-      GRAPH_ENDPOINT: "https://graph.microsoft.com/v1.0/me",
-      GRAPH_ENDPOINT_MEMBER_OF: "https://graph.microsoft.com/v1.0/me/memberOf",
+      // GRAPH_ENDPOINT: "https://graph.microsoft.com/v1.0/me",
+      // GRAPH_ENDPOINT_MEMBER_OF: "https://graph.microsoft.com/v1.0/me/memberOf",
+      GRAPH_ENDPOINT: graphEndPoints.graphEndPoint,
+      GRAPH_ENDPOINT_MEMBER_OF: graphEndPoints.graphMemberOf,
       account: undefined,
       profile: "",
       userInfo: "",
@@ -85,28 +92,30 @@ export default {
       userData: "",
       selectedLanguage: "en-GB",
       selectedProfile: "WILSON_CTS_Agents",
-      languages: [
-        { language: "English", value: "en-GB", locale: "en-GB" },
-        { language: "German", value: "de-DE", locale: "de-DE" },
-        { language: "Slovak", value: "sk-SK", locale: "sk-SK" },
-      ],
-      roles: [
-        { value: "WILSON_CTS_Agents", displayValue: "csAgent" },
-        {
-          value: "WILSON_Warehouse_Staff_Hoppegarten",
-          displayValue: "warehouseStaffHoppegarten",
-        },
-        {
-          value: "WILSON_Warehouse_Staff_KaLi",
-          displayValue: "warehouseStaffKaLi",
-        },
-        {
-          value: "WILSON_Warehouse_Staff_SK",
-          displayValue: "warehouseStaffSK",
-        },
-        { value: "Variable_Refund_Uploader", displayValue: "M & A Director" },
-        { value: "WILSON_C2R_Staff", displayValue: "C2R Team" },
-      ],
+      selectLanguages: languages,
+      // languages: [
+      //   { language: "English", value: "en-GB", locale: "en-GB" },
+      //   { language: "German", value: "de-DE", locale: "de-DE" },
+      //   { language: "Slovak", value: "sk-SK", locale: "sk-SK" },
+      // ],
+      profileRoles: roles,
+      // roles: [
+      //   { value: "WILSON_CTS_Agents", displayValue: "csAgent" },
+      //   {
+      //     value: "WILSON_Warehouse_Staff_Hoppegarten",
+      //     displayValue: "warehouseStaffHoppegarten",
+      //   },
+      //   {
+      //     value: "WILSON_Warehouse_Staff_KaLi",
+      //     displayValue: "warehouseStaffKaLi",
+      //   },
+      //   {
+      //     value: "WILSON_Warehouse_Staff_SK",
+      //     displayValue: "warehouseStaffSK",
+      //   },
+      //   { value: "Variable_Refund_Uploader", displayValue: "M & A Director" },
+      //   { value: "WILSON_C2R_Staff", displayValue: "C2R Team" },
+      // ],
     };
   },
   components: {
@@ -151,9 +160,7 @@ export default {
           await this.acquireTokenAndMakeGraphRequest();
         }
       } catch (error) {
-        // alert(" Error Login");
         this.$store.dispatch("notifications/showErrorToast", "Login Fails");
-
         console.error(`error during authentication: ${error}`);
       }
     },
@@ -270,19 +277,20 @@ export default {
       if (variable_Refund_Uploader) {
         localStorage.removeItem("currentUserRole");
       }
-      localStorage.removeItem("currentUser");
-      localStorage.removeItem("userPreferredLanguage");
-      localStorage.removeItem("consequentialDamage");
-      localStorage.removeItem("ReturnReasonsScene_Damage_true_coolingOff_true");
-      localStorage.removeItem(
-        "ReturnReasonsScene_Damage_true_coolingOff_false"
-      );
-      localStorage.removeItem(
-        "ReturnReasonsScene_Damage_false_coolingOff_true"
-      );
-      localStorage.removeItem(
-        "ReturnReasonsScene_Damage_false_coolingOff_false"
-      );
+      clearLocalStorage();
+      // localStorage.removeItem("currentUser");
+      // localStorage.removeItem("userPreferredLanguage");
+      // localStorage.removeItem("consequentialDamage");
+      // localStorage.removeItem("ReturnReasonsScene_Damage_true_coolingOff_true");
+      // localStorage.removeItem(
+      //   "ReturnReasonsScene_Damage_true_coolingOff_false"
+      // );
+      // localStorage.removeItem(
+      //   "ReturnReasonsScene_Damage_false_coolingOff_true"
+      // );
+      // localStorage.removeItem(
+      //   "ReturnReasonsScene_Damage_false_coolingOff_false"
+      // );
       this.$router.push("/");
       this.$emit("close");
       // this.$store.commit("clearModuleStates");
