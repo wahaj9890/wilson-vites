@@ -13,7 +13,7 @@
       </div>
 
       <div class="mt-12">
-        <div v-for="(menu, key) in sidemenu" :key="key">
+        <div :id=key v-for="(menu, key) in sidemenu" :key="key">
           <router-link
             :to="{ name: menu.routerLink.name }"
             class="flex items-center mb-9"
