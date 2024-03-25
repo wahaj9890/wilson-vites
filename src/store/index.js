@@ -9,6 +9,7 @@ import { technicalCheck } from "./Modules/technicalCheck"
 import { repair } from "./Modules/repair"
 import { refurbish } from './Modules/refurbish';
 import { returnInspection } from './Modules/returnInspection';
+import {mergeReturns} from "./Modules/mergeReturns"
 const secureLs = new SecureLS({ isCompression: false });
 export default createStore({
   state() {
@@ -45,13 +46,14 @@ export default createStore({
   },
   modules: {
     searchReturnOrder,
+    mergeReturns,
     global,
     notifications,
     reclamationHistory,
     technicalCheck,
     repair,
     refurbish,
-    returnInspection
+    returnInspection,
   },
   plugins: [
     createPersistedState({

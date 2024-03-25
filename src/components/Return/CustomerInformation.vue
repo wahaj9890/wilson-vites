@@ -144,6 +144,12 @@
                   </select>
                 </td>
               </tr>
+              {{
+                editReturnOrderItem.returnCompensation
+              }}
+              {{
+                "te" + " " + selectedCompensation
+              }}
               <tr class="bg-gray-200 text-black mb-2">
                 <td class="p-2 font-bold">Compensation</td>
                 <td class="p-2 font-bold">
@@ -366,6 +372,9 @@ export default {
     );
     const compensationsDetails = computed(
       () => store.state.searchReturnOrder.getCompensation || []
+    );
+    const editReturnOrderItem = computed(
+      () => store.state.mergeReturns.editReturnOrder || []
     );
     let orders = ref([]);
     const group = ref([]);
@@ -675,6 +684,7 @@ export default {
       }
     };
     const handleCheckBoxChange = ({ value, index, orderItem, checked }) => {
+      console.log(checked)
       // if (index.length > 0) {
       //   index.map((item) => {
       //     selectedCheckBox.value = item;
@@ -698,25 +708,38 @@ export default {
       //     checkForVariableRefund(returns);
       //   });
       // }
-      selectedCheckBox.value = index;
-      specificReasonSelected.value = value;
+      if (orderItem.source == "orderInformation") {
+        selectedCheckBox.value = index;
+        specificReasonSelected.value = value;
 
-      isCheckBoxChecked.value = checked;
-      let returns = group.value;
+        isCheckBoxChecked.value = checked;
+        let returns = group.value;
 
-      if (isCashOnDelivery && !customerBankDetailsFormGroupDisabled) {
-        if (returns.returnReasonId != null && returns.returnReasonId != 9) {
-          specificReasonSelected.value = true;
-          return;
+        if (isCashOnDelivery && !customerBankDetailsFormGroupDisabled) {
+          if (returns.returnReasonId != null && returns.returnReasonId != 9) {
+            specificReasonSelected.value = true;
+            return;
+          }
+
+          if (!specificReasonSelected) {
+            // this.clearCustomerBankDetailsValidators();
+          } else {
+            // this.enableCustomerBankDetailsValidatorsInternal();
+          }
         }
-
-        if (!specificReasonSelected) {
-          // this.clearCustomerBankDetailsValidators();
-        } else {
-          // this.enableCustomerBankDetailsValidatorsInternal();
+        checkForVariableRefund(returns, orderItem);
+      } else if (orderItem.source == "returnOrderItems") {
+        const paylod = {
+          returnOrderId: orderItem.returnOrderId,
+        };
+        store.dispatch("mergeReturns/editReturnOrder", paylod);
+        if (event.target.checked && orderItem.source == "returnOrderItems") {
+          // If checkbox is checked, bind the value from editReturnOrderItem
+          selectedCompensation.value = editReturnOrderItem.value;
         }
+        // selectedCompensation.value = editReturnOrderItem.returnCompensation
+        console.log(selectedCompensation);
       }
-      checkForVariableRefund(returns);
     };
 
     const buildForm = async () => {
@@ -794,7 +817,7 @@ export default {
       //   this.customerBankDetailsFormGroupDisabled = true;
       // }
     };
-    const checkForVariableRefund = (returns) => {
+    const checkForVariableRefund = (returns, orderItem) => {
       currencyCode.value =
         store.state.searchReturnOrder.getOrderDetails.orders[0].currency;
       const countryCode =
@@ -808,30 +831,38 @@ export default {
         );
       const unitPrice = item[0].unitPriceGrossLocalCurrency;
       const orderItemQuantity = item[0].quantity;
-      let payload = {
-        sku,
-        orderItemId,
-        countryCode,
-        wayOfDistributionReturn,
-      };
-      store
-        .dispatch("searchReturnOrder/checkVariableRefund", payload)
-        .then(() => {
-          variableRefund.value = store.state.searchReturnOrder.variableRefund;
-          if (
-            variableRefund.value.isVariabeRefundApplied === false &&
-            variableRefund.value.value !== 0
-          ) {
-            const percentage = variableRefund.value.value;
-            const calculateOfferPrice =
-              (unitPrice * percentage) / 100 / orderItemQuantity;
-            valueInFigures.value = Math.trunc(calculateOfferPrice);
-            valueInPercentage.value = percentage;
-            if (appRoleId.value === "1" && isCheckBoxChecked.value) {
-              openVariableRefundDialog(orderItemId, returns);
+      if (orderItem.source == "orderInformation") {
+        let payload = {
+          sku,
+          orderItemId,
+          countryCode,
+          wayOfDistributionReturn,
+        };
+        store
+          .dispatch("searchReturnOrder/checkVariableRefund", payload)
+          .then(() => {
+            variableRefund.value = store.state.searchReturnOrder.variableRefund;
+            if (
+              variableRefund.value.isVariabeRefundApplied === false &&
+              variableRefund.value.value !== 0
+            ) {
+              const percentage = variableRefund.value.value;
+              const calculateOfferPrice =
+                (unitPrice * percentage) / 100 / orderItemQuantity;
+              valueInFigures.value = Math.trunc(calculateOfferPrice);
+              valueInPercentage.value = percentage;
+              if (appRoleId.value === "1" && isCheckBoxChecked.value) {
+                openVariableRefundDialog(orderItemId, returns);
+              }
             }
-          }
-        });
+          });
+      }
+      // else if (orderItem.source == "returnOrderItems") {
+      //   const paylod = {
+      //     returnOrderId: orderItem.returnOrderId,
+      //   };
+      //   store.dispatch("mergeReturns/editReturnOrder", paylod);
+      // }
     };
     const openVariableRefundDialog = (orderItemId, returns) => {
       const refundValue = valueInFigures.value;
@@ -1116,6 +1147,7 @@ export default {
       isDiscountRejected,
       isRec4poFetched,
       returnsFormArray,
+      editReturnOrderItem,
       // returnFormGroup,
       carriersList,
       variableRefund,

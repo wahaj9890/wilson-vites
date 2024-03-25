@@ -4,41 +4,45 @@ export const mergeReturns = {
     namespaced: true,
     state: {
         globalSearch: '',
-        showSpinner: ""
+        showSpinner: "",
+        manageReturns:[],
+        editReturnOrderList : [],
+        userPreferredLang: localStorage.getItem('userPreferredLanguage'),
+        
     },
     mutations: {
-        SEARCH_RETURN_ORDER(state, data) {
-            state.globalSearch = data
+        SET_EDIT_RETURN_ORDER(state, data) {
+            state.editReturnOrder = data
+            console.log(state.editReturnOrder)
         },
-        SET_SHOW_SPINNER(state, data) {
-            state.showSpinner = data
+        SET_MANAGE_ORDER(state, data) {
+            state.manageReturns = data.data
         }
+        
     },
     actions: {
         storeData({ commit }, payload) {
             commit('SEARCH_RETURN_ORDER', payload);
         },
-        // async searchReturnAction({ commit, state }, newData) {
-        //     try {
-        //         const response = await request.post(`${environment.apiUrl}/api/orders/search-orders?culture=${state.userPreferredLang}`, { body: newData });
-        //         commit('SET_RETURN_ORDER', response.data);
-        //     } catch (error) {
-        //         dispatch("notifications/showErrorToast", error.message, { root: true });
+        async manageReturnAction({ commit, state }, newData) {
+            try {
+                const response = await request.post(`${environment.apiUrl}/api/returns/search-returns?culture=${state.userPreferredLang}`, { body: newData });
+                commit('SET_MANAGE_ORDER', response.data);
+            } catch (error) {
+                dispatch("notifications/showErrorToast", error.message, { root: true });
 
-        //     }
-        // },
-        // async getOrdersToReturn({ commit }, payload) {
-        //     try {
-        //         commit('SET_SHOW_SPINNER', true)
-        //         const response = await request.get(`${environment.apiUrl}/api/returns/get-orders-items-to-returns`, { params: payload });
-        //         commit('SET_ORDER_ITEM_TO_RETURN', response.data);
-        //         commit('SET_SHOW_SPINNER', false)
+            }
+        },
+        async editReturnOrder({ commit }, payload) {
+            try {
+                const response = await request.get(`${environment.apiUrl}/api/returns/get-receive-return-details`, { params: payload });
+                commit('SET_EDIT_RETURN_ORDER', response.data.data);
 
-        //     } catch (error) {
-        //         dispatch("notifications/showErrorToast", error.message, { root: true });
+            } catch (error) {
+                dispatch("notifications/showErrorToast", error.message, { root: true });
 
-        //     }
-        // },
+            }
+        },
 
     }
 }

@@ -33,7 +33,7 @@
               index % 2 !== 0 ? 'bg-[#F7F7F7]' : '',
             ]"
           >
-            {{ item[column.key] }}
+            {{ formatValue(item[column.key]) }}
           </td>
           <div class="flex flex-col gap-1">
             <button
@@ -43,6 +43,7 @@
               Create
             </button>
             <button
+              v-tooltip="'This is a tooltip'"
               class="bg-[#FFFFFF] text-black border px-2 py-1"
               @click="navigateToCreateReturn(item.orderId, true)"
             >
@@ -59,7 +60,7 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
-
+import { formatValue } from "../../utils/globalMethods";
 export default {
   name: "ReturnDetails",
   props: [""],
@@ -143,7 +144,8 @@ export default {
       //   download: "None",
       // },
     ]);
-    function navigateToCreateReturn(orderId,isManageReturn) {
+
+    function navigateToCreateReturn(orderId, isManageReturn) {
       router.push({
         name: "create-return",
         query: { orderId, isManageReturn },
@@ -163,6 +165,7 @@ export default {
       searchOrders,
       isAuthenticatedUser,
       navigateToCreateReturn,
+      formatValue,
     };
   },
 };

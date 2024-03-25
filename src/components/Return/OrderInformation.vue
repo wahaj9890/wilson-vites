@@ -1,3 +1,4 @@
+
 <template>
   <div>
     <div class="p-8">
@@ -42,7 +43,10 @@
         />
         <h2 class="text-xl ml-3">Select all items</h2>
       </div>
-      <div v-if="showSpinner &&cardVisible " class="flex items-center justify-center">
+      <div
+        v-if="showSpinner && cardVisible"
+        class="flex items-center justify-center"
+      >
         <div
           class="animate-bounce bg-white dark:bg-slate-800 p-2 w-10 h-10 ring-1 ring-slate-900/5 dark:ring-slate-200/20 shadow-lg rounded-full flex items-center justify-center"
         >
@@ -66,13 +70,13 @@
               'flex justify-between p-4',
               index % 2 === 0 ? 'bg-[#F7F7F7]' : 'bg-[#DDDDDD]',
             ]"
-            v-for="(orderItem, index) in orderInformation"
+            v-for="(orderItem, index) in combinedOrderItems"
             :key="orderItem.articleNumber"
             @click="openSidebar(orderItem.articleNumber)"
           >
             <div>
               <h3 class="text-lg font-bold">{{ orderItem.articleNumber }}</h3>
-              <p>Qty: {{ orderItem.quantity }}</p>
+              <p v-if="orderItem.quantity">Qty: {{ orderItem.quantity }}</p>
               <div class="flex items-center mb-2">
                 <input
                   v-model="checkBoxSelected[index]"
@@ -81,29 +85,32 @@
                   :disabled="orderItem.isKittingMaster || orderItem.isSetMaster"
                   @change="checkBoxChanged(index, $event, orderItem)"
                 />
-                <p class="ml-2 truncate">{{ orderItem.articleDescription }}</p>
+                <p v-if="orderItem.articleDescription" class="ml-2 truncate">
+                  {{ orderItem.articleDescription }}
+                </p>
               </div>
+              <div
+                class="flex items-center mt-2"
+                v-if="orderItem.source == 'returnOrderItems'"
+              >
+                <!-- <img :src="fileIcon" alt="file Icon" /> -->
 
-              <div class="flex items-center mt-2">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+                <!-- <span class="underline ml-2"> Download Manual</span> --> 
+                <div
+                  class="bg-yellow-300 flex items-center justify-center w-4 h-4 mr-2 cursor-pointer"
                 >
-                  <rect width="20" height="20" rx="1" fill="#F3E43E" />
-                  <path
-                    d="M12.8574 7.2395H8.75586C8.59473 7.2395 8.46289 7.10767 8.46289 6.94653V6.75122C8.46289 6.59009 8.59473 6.45825 8.75586 6.45825H12.8574C13.0186 6.45825 13.1504 6.59009 13.1504 6.75122V6.94653C13.1504 7.10767 13.0186 7.2395 12.8574 7.2395ZM13.1504 8.50903V8.31372C13.1504 8.15259 13.0186 8.02075 12.8574 8.02075H8.75586C8.59473 8.02075 8.46289 8.15259 8.46289 8.31372V8.50903C8.46289 8.67017 8.59473 8.802 8.75586 8.802H12.8574C13.0186 8.802 13.1504 8.67017 13.1504 8.50903ZM14.73 15.052H14.8105C14.9717 15.052 15.1035 15.1838 15.1035 15.345V15.5403C15.1035 15.7014 14.9717 15.8333 14.8105 15.8333H6.11914C5.04004 15.8333 4.16602 14.9592 4.16602 13.8801V5.28638C4.16602 4.20728 5.04004 3.33325 6.11914 3.33325H14.5176C14.8423 3.33325 15.1035 3.59448 15.1035 3.91919V12.9036C15.1035 13.1477 14.9521 13.3577 14.7397 13.4456C14.6519 13.8386 14.6323 14.5588 14.73 15.052ZM7.29102 12.7083H14.3223V4.1145H7.29102V12.7083ZM4.94727 13.0989C5.27441 12.8547 5.67969 12.7083 6.11914 12.7083H6.50977V4.1145H6.11914C5.47217 4.1145 4.94727 4.6394 4.94727 5.28638V13.0989ZM14.0366 15.052C13.9609 14.554 13.9658 13.9485 14.0366 13.4895H6.11914C4.55664 13.4895 4.55664 15.052 6.11914 15.052H14.0366Z"
-                    fill="black"
-                  />
-                </svg>
+                  <img :src="edits" alt="Edit Icon" />
+                </div>
 
-                <span class="underline ml-2"> Download Manual</span>
+                <div
+                  class="flex items-center justify-center w-4 h-4 cursor-pointer"
+                >
+                <img :src="files" alt="file Icon" />
+
+                </div>
               </div>
             </div>
             <div class="flex justify-end">
-              <!-- src="https://filmfare.wwmindia.com/content/2022/oct/salman-khan-new-look-from-kisi-ka-bhai-kisi-ki-jaan.jpg" -->
               <img alt="Product Image" class="w-24 h-24" />
             </div>
           </div>
@@ -131,6 +138,8 @@ import { useStore } from "vuex";
 import { eventBus } from "../../utils/eventBus";
 import ViewArticleDetails from "../common/ViewArticleDetails.vue";
 import ReclamationHistory from "../common/ReclamationHistory.vue";
+import edit from "../../assets/images/edit.svg";
+import file from "../../assets/images/file.svg";
 export default {
   name: "OrderInformation",
   components: {
@@ -144,15 +153,41 @@ export default {
     const checkBoxChecked = ref(false);
     const specificReasonSelected = ref(false);
     const selectAllCheckBox = ref(false);
+    const edits = ref(edit);
+    const files = ref(file);
     const route = useRoute();
     const returnOrderId = route.query.orderId;
 
     const isSidebarOpen = ref(false);
     const showReclamationHistory = ref(false);
     const selectedArticleNumber = ref("");
-    const orderInformation = computed(
-      () => store.state.searchReturnOrder.orderItemsToReturn.orderItems || {}
-    );
+    // const orderInformation = computed(
+    //   () => store.state.searchReturnOrder.orderItemsToReturn.orderItems || {}
+    // );
+    
+    const orderInformation = ref([]);
+    const returnOrderItems = ref([]);
+
+    // const combinedOrderItems = computed(() => {
+    //   const combinedItems = [
+    //     ...orderInformation.value,
+    //     ...returnOrderItems.value,
+    //   ];
+    //   return combinedItems;
+    // });
+    const combinedOrderItems = computed(() => {
+      const combinedItems = [
+        ...orderInformation.value.map((item) => ({
+          ...item,
+          source: "orderInformation",
+        })),
+        ...returnOrderItems.value.map((item) => ({
+          ...item,
+          source: "returnOrderItems",
+        })),
+      ];
+      return combinedItems;
+    });
     const showSpinner = computed(
       () => store.state.searchReturnOrder.showSpinner
     );
@@ -161,6 +196,10 @@ export default {
       referenceNumber: returnOrderId,
       orderItemId: "",
       culture: localStorage.getItem("userPreferredLanguage"),
+    };
+    const managePayload = {
+      appRoleId: JSON.parse(localStorage.getItem("currentUser"))?.role?.id,
+      orderId: returnOrderId,
     };
     const toggleCardVisibility = () => {
       cardVisible.value = !cardVisible.value;
@@ -229,12 +268,18 @@ export default {
     };
     onMounted(async () => {
       await store.dispatch("searchReturnOrder/getOrdersToReturn", payload);
+      await store.dispatch("mergeReturns/manageReturnAction", managePayload);
 
+      // orderInformation.value =
+      //   store.state.searchReturnOrder.orderItemsToReturn.orderItems;
       orderInformation.value =
-        store.state.searchReturnOrder.orderItemsToReturn.orderItems;
+        store.state.searchReturnOrder.orderItemsToReturn.orderItems || [];
+      returnOrderItems.value = store.state.mergeReturns.manageReturns || [];
     });
     return {
       orderInformation,
+      combinedOrderItems,
+      returnOrderItems,
       checkBoxSelected,
       checkBoxChecked,
       cardVisible,
@@ -245,6 +290,8 @@ export default {
       returnOrderId,
       showSpinner,
       selectAllCheckBox,
+      edits,
+      files,
       openSidebar,
       closeSidebar,
       checkBoxChanged,

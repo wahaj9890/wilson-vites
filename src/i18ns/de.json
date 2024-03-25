@@ -10,7 +10,12 @@
   "pages": {
     "returnPage": {
       "fields": {
-        "order_number": "Order number german"
+        "order_number": "G Order number",
+        "customer_number":"G Customer Number",
+        "invoice_number":"G Invoice Number",
+        "customerReference_number":"G Customer Reference Number",
+        "tracking_number": "G Tracking Number",
+        "searchFor":"G Search For"
       }
     }
   }

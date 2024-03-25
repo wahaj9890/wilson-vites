@@ -10,10 +10,10 @@ import i18n from "./i18ns/i18n"
 import { eventBus } from "./utils/eventBus"
 import Toast from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
+import tooltipe from './plugins/tooltipe'
 const app = createApp(App);
 app.use(i18n)
 app.use(Toast);
-
 app.config.globalProperties.$msalInstance = {};
 app.config.globalProperties.$eventBus = eventBus;
-app.use(router).use(store).mount('#app')
+app.use(router).use(store).use(tooltipe).mount('#app')

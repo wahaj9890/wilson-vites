@@ -4,7 +4,7 @@
       {{ $t("login.wilson.welcome") }}
     </p>
     <p class="font-bold mt-4 text-2xl primaryHeading">
-      {{ $t("pages.returnsPage.fields.searchFor") }}
+      {{ $t("pages.returnPage.fields.searchFor") }}
     </p>
     <div class="md:flex items-center space-x-4 pt-2">
       <div v-for="field in fieldsCol" class="mb-4 md:w-1/4">
@@ -205,7 +205,7 @@ export default {
       store.dispatch("searchReturnOrder/storeData", payload);
     }
     onMounted(() => {
-      if (!!globalSearch) {
+      if (!!globalSearch.value) {
         store.dispatch(
           "searchReturnOrder/searchReturnAction",
           globalSearch.value
