@@ -110,19 +110,7 @@
                       {{ damage.value }}
                     </option>
                   </select>
-                  <svg
-                    v-if="isManageReturn"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M16.1567 5.92206L19.3284 9.09377C19.462 9.22739 19.462 9.4454 19.3284 9.57902L11.6488 17.2586L8.38562 17.6208C7.9496 17.6701 7.58039 17.3008 7.62962 16.8648L7.9918 13.6017L15.6714 5.92206C15.805 5.78844 16.0231 5.78844 16.1567 5.92206ZM21.8531 5.11682L20.1371 3.40086C19.6027 2.86638 18.7341 2.86638 18.1961 3.40086L16.9514 4.64563C16.8177 4.77925 16.8177 4.99727 16.9514 5.13089L20.1231 8.3026C20.2567 8.43622 20.4747 8.43622 20.6083 8.3026L21.8531 7.05782C22.3876 6.51983 22.3876 5.6513 21.8531 5.11682ZM15.5026 15.17L15.5026 18.7496H4.25044L4.25044 7.49736L12.3309 7.49736C12.4434 7.49736 12.5489 7.45165 12.6298 7.37429L14.0363 5.96777C14.3036 5.70053 14.1137 5.24692 13.7375 5.24692L3.68783 5.24692C2.75601 5.24692 2 6.00293 2 6.93475L2 19.3122C2 20.244 2.75601 21 3.68783 21H16.0653C16.9971 21 17.7531 20.244 17.7531 19.3122V13.7634C17.7531 13.3872 17.2995 13.2008 17.0322 13.4645L15.6257 14.8711C15.5484 14.9519 15.5026 15.0574 15.5026 15.17Z"
-                      fill="black"
-                    />
-                  </svg>
+                  <img  v-if="isManageReturn" :src="pencils" alt="edit pencil">
                 </td>
               </tr>
               <tr class="bg-gray-200 text-black mb-2">
@@ -277,6 +265,8 @@ import {
 import { eventBus } from "../../utils/eventBus";
 import CommonDialog from "../common/CommonDialog.vue";
 import { useToast } from "vue-toastification";
+import pencil from "../../assets/images/pencil.svg";
+
 export default {
   name: "CustomerInformation",
   components: {
@@ -288,7 +278,7 @@ export default {
     const toast = useToast();
     const selectedPickupDate = ref("");
     const success = () => toast.success("You did it! 🎉");
-
+    const pencils = ref(pencil)
     const showCustomerInformation = ref(true);
     const showCompensation = ref(true);
     const setConsequentialDamage = ref("");
@@ -1156,6 +1146,7 @@ export default {
       expiryDate,
       group,
       returnShipmentFee,
+      pencils,
       selectedCarrier,
       wayOfDistribution,
       variableRefundDialog,

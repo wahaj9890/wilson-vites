@@ -75,7 +75,13 @@
             @click="openSidebar(orderItem.articleNumber)"
           >
             <div>
-              <h3 class="text-lg font-bold">{{ orderItem.articleNumber }}</h3>
+              <a
+              href="#"
+                class="text-lg font-bold text-[#0000ff]"
+                @click="showArticleDetailsPage(orderItem.articleNumber)"
+              >
+                {{ orderItem.articleNumber }}
+            </a>
               <p v-if="orderItem.quantity">Qty: {{ orderItem.quantity }}</p>
               <div class="flex items-center mb-2">
                 <input
@@ -95,7 +101,7 @@
               >
                 <!-- <img :src="fileIcon" alt="file Icon" /> -->
 
-                <!-- <span class="underline ml-2"> Download Manual</span> --> 
+                <!-- <span class="underline ml-2"> Download Manual</span> -->
                 <div
                   class="bg-yellow-300 flex items-center justify-center w-4 h-4 mr-2 cursor-pointer"
                 >
@@ -105,8 +111,7 @@
                 <div
                   class="flex items-center justify-center w-4 h-4 cursor-pointer"
                 >
-                <img :src="files" alt="file Icon" />
-
+                  <img :src="files" alt="file Icon" />
                 </div>
               </div>
             </div>
@@ -127,6 +132,11 @@
         :closeDialog="closeDialog"
         :returnOrderId="returnOrderId"
       />
+      <ArticleDetails
+        v-if="showArticleDetails"
+        :closeDialog="closeDialog"
+        :selectedArticleNumber="selectedArticleNumber"
+      />
     </div>
   </div>
 </template>
@@ -138,6 +148,7 @@ import { useStore } from "vuex";
 import { eventBus } from "../../utils/eventBus";
 import ViewArticleDetails from "../common/ViewArticleDetails.vue";
 import ReclamationHistory from "../common/ReclamationHistory.vue";
+import ArticleDetails from "../common/ArticleDetails.vue";
 import edit from "../../assets/images/edit.svg";
 import file from "../../assets/images/file.svg";
 export default {
@@ -145,6 +156,7 @@ export default {
   components: {
     ViewArticleDetails,
     ReclamationHistory,
+    ArticleDetails,
   },
   setup() {
     const router = useRouter();
@@ -164,7 +176,7 @@ export default {
     // const orderInformation = computed(
     //   () => store.state.searchReturnOrder.orderItemsToReturn.orderItems || {}
     // );
-    
+
     const orderInformation = ref([]);
     const returnOrderItems = ref([]);
 
@@ -201,6 +213,7 @@ export default {
       appRoleId: JSON.parse(localStorage.getItem("currentUser"))?.role?.id,
       orderId: returnOrderId,
     };
+    const showArticleDetails = ref(false);
     const toggleCardVisibility = () => {
       cardVisible.value = !cardVisible.value;
     };
@@ -208,7 +221,10 @@ export default {
       isSidebarOpen.value = true;
       selectedArticleNumber.value = articleNumber;
     };
-
+    const showArticleDetailsPage = (articleNumber) => {
+      showArticleDetails.value = true;
+      selectedArticleNumber.value = articleNumber;
+    };
     const closeSidebar = () => {
       eventBus.emit("temp", {});
       isSidebarOpen.value = false;
@@ -244,6 +260,7 @@ export default {
     };
     const closeDialog = () => {
       showReclamationHistory.value = false;
+      showArticleDetails.value = false;
     };
     const selectAllItemsToReturn = () => {
       // checkBoxSelected.value = orderInformation.value.map((item,index) => !selectAllCheckBox.value);
@@ -292,7 +309,9 @@ export default {
       selectAllCheckBox,
       edits,
       files,
+      showArticleDetails,
       openSidebar,
+      showArticleDetailsPage,
       closeSidebar,
       checkBoxChanged,
       backToSearch,
