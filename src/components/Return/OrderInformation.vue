@@ -76,12 +76,12 @@
           >
             <div>
               <a
-              href="#"
+                href="#"
                 class="text-lg font-bold text-[#0000ff]"
                 @click="showArticleDetailsPage(orderItem.articleNumber)"
               >
                 {{ orderItem.articleNumber }}
-            </a>
+              </a>
               <p v-if="orderItem.quantity">Qty: {{ orderItem.quantity }}</p>
               <div class="flex items-center mb-2">
                 <input
@@ -266,14 +266,18 @@ export default {
       // checkBoxSelected.value = orderInformation.value.map((item,index) => !selectAllCheckBox.value);
       // allSelectedIndex.push(index)
       checkBoxSelected.value = orderInformation.value.map((item, index) => {
-        const isSelected = !selectAllCheckBox.value;
-        if (isSelected && !allSelectedIndex.includes(index)) {
-          allSelectedIndex.push(index);
-        } else if (!isSelected) {
-          const indexToRemove = allSelectedIndex.indexOf(index);
-          if (indexToRemove !== -1) {
-            allSelectedIndex.splice(indexToRemove, 1);
+        let isSelected = !selectAllCheckBox.value;
+        if (!(item.isSetMaster || item.isKittingMaster)) {
+          if (isSelected && !allSelectedIndex.includes(index)) {
+            allSelectedIndex.push(index);
+          } else if (!isSelected) {
+            const indexToRemove = allSelectedIndex.indexOf(index);
+            if (indexToRemove !== -1) {
+              allSelectedIndex.splice(indexToRemove, 1);
+            }
           }
+        } else {
+          isSelected = false; // Ensure the checkbox is not selected for excluded items
         }
         return isSelected;
       });

@@ -104,6 +104,25 @@ export default [
             // title: "Returns",
         }
     },
+    {
+        path: "/returns/bulk-return",
+        name: "BulkReturn",
+        component: () => import("../../views/BulkReturn.vue"),
+        meta: {
+            requiresAuth: true,
+            name: "BulkReturn"
 
+        }
+    },
+    {
+        path: "/returns/compensation-updater",
+        name: "CompensationUpdater",
+        component: () => import("../../views/CompensationUpdater.vue"),
+        meta: {
+            requiresAuth: true,
+            name: "CompensationUpdater"
+
+        }
+    },
 
 ]

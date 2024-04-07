@@ -242,7 +242,6 @@ export default {
                         this.fetchConsequentialDamage();
                         this.fetchReturnReasons();
                       }
-
                       if (
                         this.userData !== null ||
                         this.userData !== undefined
@@ -254,10 +253,10 @@ export default {
                         } else if (currentUserRole === "C2R_Staff") {
                           this.returnUrl = "returns/bulk-return";
                         } else {
-                          this.returnUrl = "returns/return-order";
+                          this.returnUrl = "/returns";
                         }
-
-                        this.$router.push("/returns");
+                        // this.$router.push("/returns");
+                        this.$router.push(this.returnUrl)
                       }
                     });
                   return user.data;

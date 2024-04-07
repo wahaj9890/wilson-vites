@@ -13,19 +13,34 @@
       </div>
 
       <div class="mt-12">
-        <div :id=key v-for="(menu, key) in sidemenu" :key="key">
-          <router-link
-            :to="{ name: menu.routerLink.name }"
-            class="flex items-center mb-9"
-          >
-            <!-- <i :class="[menu.iconClass]"></i> -->
-            <div class="mr-2" v-html="menu.icon"></div>
-            <span class="text-black font-bold underline">{{
-              menu.module
-            }}</span>
-          </router-link>
-        </div>
-
+        <template v-if="isC2RStaff">
+          <div :id="key" v-for="(menu, key) in sidebarMenu" :key="key">
+            <router-link
+              :to="{ name: menu.routerLink.name }"
+              class="flex items-center mb-9"
+            >
+              <!-- <i :class="[menu.iconClass]"></i> -->
+              <div class="mr-2" v-html="menu.icon"></div>
+              <span class="text-black font-bold underline">{{
+                menu.module
+              }}</span>
+            </router-link>
+          </div>
+        </template>
+        <template v-else>
+          <div :id="key" v-for="(menu, key) in sidebarMenu" :key="key">
+            <router-link
+              :to="{ name: menu.routerLink.name }"
+              class="flex items-center mb-9"
+            >
+              <!-- <i :class="[menu.iconClass]"></i> -->
+              <div class="mr-2" v-html="menu.icon"></div>
+              <span class="text-black font-bold underline">{{
+                menu.module
+              }}</span>
+            </router-link>
+          </div>
+        </template>
         <div class="flex items-end mt-auto">
           <div class="absolute bottom-0 left-0 right-0 p-4">
             <div class="mt-auto cursor-pointer flex" @click="logout">
@@ -44,7 +59,9 @@
               </svg>
 
               <!-- <i class="fas fa-sign-out-alt text-2xl mr-2"></i> -->
-              <div class="font-bold text-black underline ml-2 mb-2">Log Out</div>
+              <div class="font-bold text-black underline ml-2 mb-2">
+                Log Out
+              </div>
             </div>
           </div>
         </div>
@@ -55,16 +72,20 @@
 
 <script>
 import { sidemenu } from "../../router/sidebar/sidemenu";
+import { bulkmenu } from "../../router/sidebar/bulkrturnmenus";
 import LoginScreen from "../../views/Login/LoginScreen.vue";
 import { useStore } from "vuex";
-import { mapState, mapActions } from "vuex";
+import { mapState } from "vuex";
+// import { watch } from "vue";
 export default {
   data() {
     return {
       temp: LoginScreen.methods.signOut,
       isSidebarOpen: false,
       sidemenu: sidemenu,
+      bulkmenu: bulkmenu,
       store: useStore(),
+      currentUserRole: localStorage.getItem("currentUserRole"),
     };
   },
   props: {
@@ -74,8 +95,17 @@ export default {
     ...mapState({
       isAuthenticatedUser: (state) => state.global.authenticatedUser,
     }),
+
+    isC2RStaff() {
+      return localStorage.getItem("currentUserRole") === "C2R_Staff";
+    },
+    sidebarMenu() {
+      return this.isC2RStaff ? bulkmenu : sidemenu;
+    },
   },
-  mounted() {},
+  mounted() {
+    console.log(this.isC2RStaff);
+  },
   methods: {
     closeSidebar() {
       this.$emit("close");
