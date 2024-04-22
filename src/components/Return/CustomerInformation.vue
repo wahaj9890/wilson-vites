@@ -110,7 +110,7 @@
                       {{ damage.value }}
                     </option>
                   </select>
-                  <img  v-if="isManageReturn" :src="pencils" alt="edit pencil">
+                  <img v-if="isManageReturn" :src="pencils" alt="edit pencil" />
                 </td>
               </tr>
               <tr class="bg-gray-200 text-black mb-2">
@@ -135,9 +135,7 @@
               {{
                 editReturnOrderItem.returnCompensation
               }}
-              {{
-                "te" + " " + selectedCompensation
-              }}
+
               <tr class="bg-gray-200 text-black mb-2">
                 <td class="p-2 font-bold">Compensation</td>
                 <td class="p-2 font-bold">
@@ -237,7 +235,7 @@
       </div>
     </div>
     <CommonDialog v-if="variableRefundDialog" />
-    <button @click="validateReturnShipmentFee">Return</button>
+    <!-- <button @click="validateReturnShipmentFee">Return</button> -->
   </div>
 </template>
 
@@ -278,7 +276,7 @@ export default {
     const toast = useToast();
     const selectedPickupDate = ref("");
     const success = () => toast.success("You did it! 🎉");
-    const pencils = ref(pencil)
+    const pencils = ref(pencil);
     const showCustomerInformation = ref(true);
     const showCompensation = ref(true);
     const setConsequentialDamage = ref("");
@@ -496,10 +494,14 @@ export default {
     };
     const onShipmentChange = () => {
       group.value.shipmentNeeded = Boolean(selectedReturnShipment.value);
-      console.log(returnsFormArray.value);
+      console.log(selectedCheckBox);
+      debugger;
       const formGroup = returnsFormArray.value.at(selectedCheckBox);
+      console.log(returnsFormArray.value);
       if (selectedReturnShipment.value === "true") {
+        console.log(formGroup);
         formGroup.isRec4poFetched = false;
+        console.log(formGroup);
         getReturnCarriersFromRec4po(formGroup);
       }
       if (
@@ -513,6 +515,7 @@ export default {
 
     const getReturnCarriersFromRec4po = (group) => {
       const item = group.value.packages;
+      console.log(item);
       const customerCountry =
         orderItemsToReturnDetails.value.deliveryAddress.countryName;
       const matchedMapping = warehouseMapping.find(
@@ -541,13 +544,13 @@ export default {
           packages: [
             {
               size: {
-                length: item.length,
-                width: item.width,
-                height: item.height,
+                length: item.length * 10,
+                width: item.width * 10,
+                height: item.height * 10,
               },
-              volume: item.volume,
-              weight: item.weight,
-              value: item.value,
+              volume: item.volume * 1000,
+              weight: item.weight * 10,
+              value: item.value * 1000,
             },
           ],
           allowedWarehouseIds: [destinationWarehouse],
@@ -663,6 +666,7 @@ export default {
         (carrier) => carrier.shortName === getSelectedCarrier
       );
       if (isRec4poFetched) {
+        debugger;
         returnShipmentFee.value = selectedCarrierObj.shipmentCost;
       } else {
         // Sent the Value as 5 if we have no response from Rec4po
@@ -674,7 +678,7 @@ export default {
       }
     };
     const handleCheckBoxChange = ({ value, index, orderItem, checked }) => {
-      console.log(checked)
+      console.log(checked);
       // if (index.length > 0) {
       //   index.map((item) => {
       //     selectedCheckBox.value = item;
@@ -704,7 +708,7 @@ export default {
 
         isCheckBoxChecked.value = checked;
         let returns = group.value;
-
+        // debugger;
         if (isCashOnDelivery && !customerBankDetailsFormGroupDisabled) {
           if (returns.returnReasonId != null && returns.returnReasonId != 9) {
             specificReasonSelected.value = true;
@@ -791,9 +795,11 @@ export default {
             returnsFormArray.value.push({ ...group, disabled: true });
           } else {
             returnsFormArray.value.push(group);
+            console.log(group);
           }
           disableShipmentNeeded(group);
           returnsFormArray.value.push(group);
+          console.log(returnsFormArray.value);
 
           item.carriers
             .filter((x) => x.isPickup)
@@ -832,16 +838,20 @@ export default {
           .dispatch("searchReturnOrder/checkVariableRefund", payload)
           .then(() => {
             variableRefund.value = store.state.searchReturnOrder.variableRefund;
+            console.log(store.state.searchReturnOrder.variableRefund);
+            debugger;
             if (
               variableRefund.value.isVariabeRefundApplied === false &&
               variableRefund.value.value !== 0
             ) {
+              debugger;
               const percentage = variableRefund.value.value;
               const calculateOfferPrice =
                 (unitPrice * percentage) / 100 / orderItemQuantity;
               valueInFigures.value = Math.trunc(calculateOfferPrice);
               valueInPercentage.value = percentage;
               if (appRoleId.value === "1" && isCheckBoxChecked.value) {
+                debugger;
                 openVariableRefundDialog(orderItemId, returns);
               }
             }
@@ -945,15 +955,14 @@ export default {
         }
         function getItemWithPriceOver50(selectedItems) {
           const itemsOver50 = selectedItems.filter(
-            (item) => item.value.unitPrice >= priceLimitToCharge
+            (item) => item.unitPrice >= priceLimitToCharge
           );
 
           if (itemsOver50.length === 1) {
             // Creating an object with the details which have price more than 50
             const itemWithShipmentFee = {
-              formattedArticleNumber:
-                itemsOver50[0].value.formattedArticleNumber,
-              articleNumber: itemsOver50[0].value.articleNumber,
+              formattedArticleNumber: itemsOver50[0].formattedArticleNumber,
+              articleNumber: itemsOver50[0].articleNumber,
             };
 
             return itemWithShipmentFee;
@@ -963,13 +972,18 @@ export default {
         }
         const itemWithShipmentFee = getItemWithPriceOver50(selectedItems);
         const shouldCharge = shouldChargeForReturn(selectedItems);
+        const customerCountry =
+          orderItemsToReturnDetails.value.deliveryAddress.countryName;
+        let payload = {
+          formattedArticleNumber: itemWithShipmentFee.formattedArticleNumber,
+          wayOfDistribution: wayOfDistribution.value,
+          countryCode: customerCountry,
+          shipmentCost: returnShipmentFee.value,
+
+          // itemWithShipmentFee.articleNumber,
+        };
         if (shouldCharge) {
-          this.getReturnShipmentFee(
-            itemWithShipmentFee.formattedArticleNumber,
-            itemWithShipmentFee.articleNumber,
-            this.wayOfDistribution,
-            this.address.countryName // "FR"
-          );
+          getReturnShipmentFee(payload);
         } else {
           // this.showSpinner = false;
           isReturnShipmentFeeValidated.value = true;
@@ -979,9 +993,12 @@ export default {
         isReturnShipmentFeeValidated.value = true;
       }
     };
+    const getReturnShipmentFee = async (payload) => {
+      await store.dispatch("mergeReturns/getReturnShipmentFee", payload);
+    };
     const submitReturn = () => {
       group.value.returnUserDescription = userDescription.value;
-      // validateReturnShipmentFee();
+      validateReturnShipmentFee();
       let filteredObjects = returnsFormArray.value.filter((item, index) =>
         // selectedCheckBox.value.includes(index)
         selectedCheckBox.value.includes(index)

@@ -110,6 +110,8 @@
 
                 <div
                   class="flex items-center justify-center w-4 h-4 cursor-pointer"
+                  :class="{ 'cursor-not-allowed bg-red': disableFile }"
+                  :disabled="disableFile"
                 >
                   <img :src="files" alt="file Icon" />
                 </div>
@@ -146,6 +148,10 @@ import { ref, onMounted, computed, reactive } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
 import { eventBus } from "../../utils/eventBus";
+import {
+  applicationRoles,
+  applicationRolesString,
+} from "../../utils/applicationRoles";
 import ViewArticleDetails from "../common/ViewArticleDetails.vue";
 import ReclamationHistory from "../common/ReclamationHistory.vue";
 import ArticleDetails from "../common/ArticleDetails.vue";
@@ -169,13 +175,17 @@ export default {
     const files = ref(file);
     const route = useRoute();
     const returnOrderId = route.query.orderId;
-
     const isSidebarOpen = ref(false);
     const showReclamationHistory = ref(false);
     const selectedArticleNumber = ref("");
     // const orderInformation = computed(
     //   () => store.state.searchReturnOrder.orderItemsToReturn.orderItems || {}
     // );
+    const disableFile = computed(() => {
+      const role = JSON.parse(localStorage.getItem("currentUser"))?.role.value;
+      return role == applicationRolesString.WarehouseStaffKaLi;
+    });
+    console.log(disableFile);
 
     const orderInformation = ref([]);
     const returnOrderItems = ref([]);
@@ -209,6 +219,7 @@ export default {
       orderItemId: "",
       culture: localStorage.getItem("userPreferredLanguage"),
     };
+    console.log(JSON.parse(localStorage.getItem("currentUser"))?.role);
     const managePayload = {
       appRoleId: JSON.parse(localStorage.getItem("currentUser"))?.role?.id,
       orderId: returnOrderId,
@@ -284,7 +295,8 @@ export default {
       eventBus.emit("specificReasonSelectedChanged", {
         value: specificReasonSelected.value,
         index: allSelectedIndex,
-        orderItem: null, // No specific order item for the "Select all items" case
+        checked:selectAllCheckBox,
+        orderItem: combinedOrderItems, // No specific order item for the "Select all items" case
       });
     };
     onMounted(async () => {
@@ -315,6 +327,7 @@ export default {
       files,
       showArticleDetails,
       openSidebar,
+      disableFile,
       showArticleDetailsPage,
       closeSidebar,
       checkBoxChanged,

@@ -11,7 +11,10 @@ import { eventBus } from "./utils/eventBus"
 import Toast from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 import tooltipe from './plugins/tooltipe'
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
 const app = createApp(App);
+app.component('VueDatePicker', VueDatePicker);
 app.use(i18n)
 app.use(Toast);
 app.config.globalProperties.$msalInstance = {};

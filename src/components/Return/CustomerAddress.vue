@@ -2,8 +2,16 @@
 import { ref, computed, onMounted, inject } from "vue";
 import { useStore } from "vuex";
 import { eventBus } from "../../utils/eventBus";
+import BankDetails from "./BankDetails.vue";
+import DatePicker from "../../components/common/DatePicker.vue"
+import ReturnShipmentFee from "./ReturnShipmenFee.vue"
 export default {
   name: "CustomerAddress",
+  components:{
+    BankDetails,
+    DatePicker,
+    ReturnShipmentFee
+  },
   setup() {
     const store = useStore();
     const showCustomerAddress = ref(false);
@@ -246,7 +254,7 @@ export default {
         <div
           @click="toggleCustomerInformation"
           class="bg-[#DDDDDD] cursor-pointer text-black font-bold py-2 px-4 mb-4"
-        >
+         >
           <span class="mr-2">RETURN INFORMATION</span>
           <i
             :class="[
@@ -303,6 +311,9 @@ export default {
           Print Label
         </button>
       </div>
+      <ReturnShipmentFee />
+      <!-- <BankDetails /> -->
+      <!-- <DatePicker /> -->
     </div>
   </div>
 </template>

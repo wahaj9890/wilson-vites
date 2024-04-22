@@ -6,6 +6,8 @@ export const global = {
     state: {
         authenticatedUser: false,
         discountReject: "",
+        userPreferredLang: localStorage.getItem('userPreferredLanguage'),
+
         // orderItemsToReturn: [],
         // getOrderDetails: [],
     },
@@ -28,9 +30,9 @@ export const global = {
     },
     actions: {
 
-        async fetchRegistrationReasons({ commit }, { payload, keys }) {
+        async fetchRegistrationReasons({ commit,state }, { payload, keys }) {
             try {
-                const response = await request.get(`${environment.apiUrl}/api/returns/get-registration-reasons`, { params: payload });
+                const response = await request.get(`${environment.apiUrl}/api/returns/get-registration-reasons?culture=${state.userPreferredLang}`, { params: payload });
                 const responseData = (response.data.data);
                 localStorage.setItem(keys, JSON.stringify(responseData))
             } catch (error) {

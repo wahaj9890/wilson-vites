@@ -135,12 +135,11 @@ export const searchReturnOrder = {
         },
         async createReturn({ commit, state, dispatch }, payload) {
             try {
-                const response = await request.post(`${environment.apiUrl}/api/returns/create-return?culture=${state.userPreferredLang}`, { body: payload });
+                const response = await request.post(`${environment.apiUrl}/api/returns/create-returns?culture=${state.userPreferredLang}`, { body: payload });
                 commit('SET_CREATE_RETURN', response.data);
             } catch (error) {
                 dispatch("notifications/showErrorToast", error.message, { root: true });
             }
         },
-
     }
 }
